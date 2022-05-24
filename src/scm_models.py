@@ -14,6 +14,7 @@ class LawSchool(SCM):
         self.exo_vars = exo_vars
         self.SEM = None
         self.data = data
+        self.scfs = None
 
     def get_structural_equation_model(self) -> Dict:
         """ Define your set of structural equations as lambda row: df_var(row[x1],...,row[xj]) """
@@ -44,6 +45,23 @@ class LawSchool(SCM):
         print(*temp_new_vars, sep='\n')
         del temp_new_vars
 
+        if update_data:
+            self.data = df
+
+        return df
+
+    def generate_scfs(self, do: Dict, data: DataFrame = None, update_data: bool = False, ) -> DataFrame:
+        """ Generate the structural counterfactuals (SCFs) using the SEM """
+        if self.scfs is None:
+            self.scfs = {}
+
+        if data is None:
+            df = self.data
+        else:
+            df = data.copy()
+
+        # do: {'var_to_intervene': 'intervention'}
+        
         if update_data:
             self.data = df
 
