@@ -55,6 +55,10 @@ class StructuralCausalModel(ABC):
     def get_structural_equation_model(self):
         pass
 
+    @abstractmethod
+    def generate_fcts(self):
+        pass
+
     # @abstractmethod
     # def generate_scfs(self):
     #     pass
