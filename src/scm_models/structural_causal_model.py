@@ -63,10 +63,6 @@ class StructuralCausalModel(ABC):
     def generate_scfs(self):
         pass
 
-    # @abstractmethod
-    # def generate_scfs(self):
-    #     pass
-
 #
 # EOF
 #
