@@ -51,10 +51,10 @@ class StructuralCausalModel(ABC):
                 adj_lst[i0].append(i1)
         return adj_lst
 
-    # @abstractmethod
-    # def structural_equations(self):
-    #     pass
-    #
+    @abstractmethod
+    def get_structural_equations(self):
+        pass
+
     # @abstractmethod
     # def generate_scfs(self):
     #     pass
