@@ -52,7 +52,7 @@ class StructuralCausalModel(ABC):
         return adj_lst
 
     @abstractmethod
-    def get_structural_equations(self):
+    def get_structural_equation_model(self):
         pass
 
     # @abstractmethod

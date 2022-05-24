@@ -9,12 +9,12 @@ class LawSchool(SCM):
                  data: DataFrame = None, ):
         super(LawSchool, self).__init__(edge_list=list_edges_w_weights, )
         self.causal_sufficiency = causal_sufficiency
-        self.SE = None
+        self.SEM = None
         self.data = data
 
-    def get_structural_equations(self) -> Dict:
+    def get_structural_equation_model(self) -> Dict:
         """ Define your set of structural equations here """
-        self.SE = {}
-        print("introduce the structural equations as a dictionary of functions using 'SE'")
+        self.SEM = {}
+        print("introduce the structural equations as a dictionary of functions using 'SEM'")
         # todo: seems hard to automate this part...
 
