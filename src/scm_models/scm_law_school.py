@@ -1,4 +1,5 @@
-from structural_causal_model import StructuralCausalModel as SCM
+from scm_models.structural_causal_model import StructuralCausalModel as SCM
+# from structural_causal_model import StructuralCausalModel as SCM
 from typing import List, Tuple, Dict
 from pandas import DataFrame
 
@@ -16,7 +17,7 @@ class LawSchool(SCM):
         self.SEM = None
         self.scfs = None
 
-    def define_sem(self) -> Dict:
+    def define_sem(self):
         """ Define your set of structural equation model (SEM) as lambda row: df_var(row[x1],...,row[xj]) """
         if self.SEM:
             print("class instance already has a structural equation model dict; overwrite it via 'SEM' if needed")
@@ -50,7 +51,7 @@ class LawSchool(SCM):
 
         return df
 
-    def generate_scfs(self, do: Dict, do_desc: str, data: DataFrame = None, ) -> DataFrame:
+    def generate_scfs(self, do: Dict[str, int or float], do_desc: str, data: DataFrame = None, ) -> DataFrame:
         """ Generate the structural counterfactuals (SCFs) using the SEM model"""
         if self.scfs is None:
             self.scfs = {}
