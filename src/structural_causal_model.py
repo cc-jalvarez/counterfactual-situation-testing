@@ -52,11 +52,15 @@ class StructuralCausalModel(ABC):
         return adj_lst
 
     @abstractmethod
-    def get_structural_equation_model(self):
+    def define_sem(self):
         pass
 
     @abstractmethod
-    def generate_fcts(self):
+    def run_sem(self):
+        pass
+
+    @abstractmethod
+    def generate_scfs(self):
         pass
 
     # @abstractmethod
