@@ -1,8 +1,10 @@
 // Stan model for Karimi2020 (v1)
 data {
-  int<lower = 0> N; // number of individuals
+  int<lower = 0> N;
   vector<lower = 0>[N] asalary; // annual salary
   vector<lower = 0>[N] account; // account balance
+  real<lower = 0> mu_account;
+  real<lower = 0> si_account;
 }
 
 parameters {
@@ -15,9 +17,11 @@ parameters {
 
 model {
   u_account ~ normal(0, 1);
+/*  u_account ~ normal(mu_account, si_account);*/
   
   lambda_account ~ normal(0, 1);
-  
   account ~ normal(beta_1*asalary + lambda_account*u_account + intercept, sigma_account);
+  
+/*  account ~ normal(beta_1*asalary + u_account + intercept, sigma_account);*/
 
 }
