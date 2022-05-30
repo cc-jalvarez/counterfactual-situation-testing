@@ -7,7 +7,7 @@ setwd(dir)
 
 # Set folder paths
 path_data = paste(dir, "data/", sep = "")
-path_code = paste(dir, "src/", sep = "")
+path_mdls = paste(dir, "src/stan_models/", sep = "")
 path_rslt = paste(dir, "results/", sep = "")
 
 # Packages
@@ -80,7 +80,7 @@ law_school_train_pooled <- list(N = nrow(df),
 
 # FIT: run the MCMC
 fit_law_school_train_pooled <- 
-  stan(file = paste(path_code, 'law_school_train_pooled.stan', sep=""),
+  stan(file = paste(path_mdls, 'law_school_train_pooled.stan', sep=""),
        data = law_school_train_pooled,
        iter = 4000,
        chains = 1,
@@ -230,7 +230,7 @@ law_school_train_separated <- list(N = nrow(df),
 
 # FIT: run the MCMC
 fit_law_school_train_separated <- 
-  stan(file = paste(path_code, 'law_school_train_separated.stan', sep=""),
+  stan(file = paste(path_mdls, 'law_school_train_separated.stan', sep=""),
        data = law_school_train_separated,
        iter = 4000,
        chains = 1,

@@ -7,7 +7,7 @@ setwd(dir)
 
 # Set folder paths
 path_data = paste(dir, "data/", sep = "")
-path_code = paste(dir, "src/", sep = "")
+path_mdls = paste(dir, "src/stan_models/", sep = "")
 path_rslt = paste(dir, "results/", sep = "")
 
 # Packages
@@ -45,7 +45,7 @@ train_v1 <- list(N = nrow(df),
 
 # FIT: run the MCMC
 fit_train_v1 <-
-  stan(file = paste(path_code, 'karimi2020_v1_train.stan', sep=""),
+  stan(file = paste(path_mdls, 'karimi2020_v1_train.stan', sep=""),
        data = train_v1,
        iter = 4000,
        chains = 1,
