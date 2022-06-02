@@ -39,15 +39,14 @@ summary(df$AccountBalance)
 # Prepare data for Stan
 train_v1 <- list(N = nrow(df),
                  asalary = df[ , c("AnnualSalary")],
-                 account = df[ , c("AccountBalance")],
-                 mu_account = 2500,
-                 si_account = 6250000)
+                 account = df[ , c("AccountBalance")]
+                 )
 
 # FIT: run the MCMC
 fit_train_v1 <-
   stan(file = paste(path_mdls, 'karimi2020_v1_train.stan', sep=""),
        data = train_v1,
-       iter = 4000,
+       iter = 2000,
        chains = 1,
        verbose = TRUE)
 
@@ -59,11 +58,12 @@ hist(u_account)
 
 lambda_account <- mean(la_train_v1$lambda_account)
 lambda_account
+hist(lambda_account*u_account)
 beta_1 <- mean(la_train_v1$beta_1)
 beta_1
 intercept <- mean(la_train_v1$intercept)
 intercept
-hist(lambda_account*u_account)
+hist(lambda_account*u_account + intercept)
 
 upd_df <- org_df
 upd_df$u2 <- u_account
@@ -72,6 +72,7 @@ upd_df$hat_account <- beta_1*df[ , c("AnnualSalary")] + lambda_account*u_account
 upd_df$diff_account <- upd_df$hat_account - upd_df$AccountBalance
 hist(upd_df$diff_account)
 summary(upd_df$diff_account)
+plot(upd_df$diff_account)
 
 mse_account <- round( sqrt( sum( (upd_df$diff_account)^2 ) / nrow(upd_df) ) )
 
