@@ -37,6 +37,7 @@ model {
   lambda_account ~ normal(0, 1);
   
   asalary ~ normal(beta_0_asalary + lambda_asalary*z, sigma_g_asalary);
+/*  asalary ~ poisson(exp(beta_0_asalary + lambda_asalary*z));*/
   
   account ~ normal(beta_0_account + beta_1*asalary + lambda_account*z, sigma_g_account);
 }

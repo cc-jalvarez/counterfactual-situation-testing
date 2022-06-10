@@ -41,6 +41,8 @@ model1
 u2_hat <- df$AccountBalance - predict.lm(model1)
 plot(u2_hat)
 plot(org_df$u2)
+plot(u2_hat - org_df$u2)
+
 hist(u2_hat)
 hist(org_df$u2, add=TRUE)
 
@@ -56,7 +58,7 @@ train_v2 <- list(N = nrow(df),
 fit_train_v2 <-
   stan(file = paste(path_mdls, 'karimi2020_v2_train.stan', sep=""),
        data = train_v2,
-       iter = 2000,
+       iter = 4000,
        chains = 1,
        verbose = TRUE)
 
@@ -68,7 +70,9 @@ hist(org_df$z)
 hist(z) #, add=TRUE)
 
 lambda.asalary <- mean(la_train_v2$lambda_asalary)
+print(lambda.asalary)
 lambda.account <- mean(la_train_v2$lambda_account)
+print(lambda.account)
 
 b0.asalary <- mean(la_train_v2$beta_0_asalary)
 print(b0.asalary)
@@ -81,10 +85,30 @@ print(b0.account)
 
 hist(lambda.account*z) # too small to shift the weights!
 
+plot(df$AccountBalance - (b0.account + b1*df$AccountBalance + lambda.account*z))
+summary(df$AccountBalance - (b0.account + b1*df$AccountBalance + lambda.account*z))
+
+# what if I add z as is?
+df2 <- df
+df2$Z <- z
+
+
+model2 <- lm(AccountBalance ~ AnnualSalary + Z + 1, data = df2)
+model2
+
+u2_hat2 <- df2$AccountBalance - predict.lm(model2)
+plot(u2_hat2)
+plot(org_df$u2)
+plot(u2_hat2 - org_df$u2)
+
+# compare all three?
+hist(u2_hat, col = 'red',)
+hist(u2_hat2, col = 'blue', add=TRUE)
+hist(org_df$u2,  add=TRUE)
+# clearly we improve the estimation of u2!
 
 
 
-
-
-
-
+#
+# EOF
+#
