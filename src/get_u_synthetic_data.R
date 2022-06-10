@@ -18,65 +18,72 @@ library(rstan)
 rstan_options(auto_write = TRUE)
 options(mc.cores = parallel::detectCores())
 
-# Setup -------------------------------------------------------------------
-
-org_df <- read.csv(file = paste(path_data, "karimi2020_v1.csv", sep = ""), sep = '|')
-
-df <- org_df %>% select("LoanApproval", "AnnualSalary", "AccountBalance")
-df$LoanApproval <- as.numeric(df$LoanApproval==1)
-# vars_x <- c("AnnualSalary", "AccountBalance")
-# vars_y <- c("LoanApproval")
-# vars_for_betas <- c("AnnualSalary")
-
-summary(df$AnnualSalary)
-summary(df$AccountBalance)
 
 # V1 ----------------------------------------------------------------------
 
-# From Karimi2020: Account Balance uses a lambda of 2500 (so 2500^2 for sigma)
+# Under causal sufficiency, there's nothing to discover for the abduction step
+# as we know how the error will appear and, under correct specification, we are
+# able to retrieve them. It's pointless for this case to go too technical.
+
+
+# V2 ----------------------------------------------------------------------
+
+org_df <- read.csv(file = paste(path_data, "karimi2020_v2.csv", sep = ""), sep = '|')
+
+# modeling dataset
+df <- org_df %>% select("LoanApproval", "AnnualSalary", "AccountBalance")
+df$LoanApproval <- as.numeric(df$LoanApproval==1)
+
+# assume linear Gaussian ADM (i.e., a f*cking OLS)
+model1 <- lm(AccountBalance ~ AnnualSalary + 1, data = df)
+model1
+# check u2 which will determine the scf
+u2_hat <- df$AccountBalance - predict.lm(model1)
+plot(u2_hat)
+plot(org_df$u2)
+hist(u2_hat)
+hist(org_df$u2, add=TRUE)
 
 # ---
 # Prepare data for Stan
-train_v1 <- list(N = nrow(df),
+train_v2 <- list(N = nrow(df),
                  asalary = df[ , c("AnnualSalary")],
                  account = df[ , c("AccountBalance")]
                  )
 
 # FIT: run the MCMC
-fit_train_v1 <-
-  stan(file = paste(path_mdls, 'karimi2020_v1_train.stan', sep=""),
-       data = train_v1,
+fit_train_v2 <-
+  stan(file = paste(path_mdls, 'karimi2020_v2_train.stan', sep=""),
+       data = train_v2,
        iter = 2000,
        chains = 1,
        verbose = TRUE)
 
 # LA: extract the information
-la_train_v1 <- extract(fit_train_v1, permuted=TRUE)
+la_train_v2 <- extract(fit_train_v2, permuted=TRUE)
 
-u_account <- colMeans(la_train_v1$u_account)
-hist(u_account)
+z <- colMeans(la_train_v2$z)
+hist(org_df$z)
+hist(z) #, add=TRUE)
 
-lambda_account <- mean(la_train_v1$lambda_account)
-lambda_account
-hist(lambda_account*u_account)
-beta_1 <- mean(la_train_v1$beta_1)
-beta_1
-intercept <- mean(la_train_v1$intercept)
-intercept
-hist(lambda_account*u_account + intercept)
+lambda.asalary <- mean(la_train_v2$lambda_asalary)
+lambda.account <- mean(la_train_v2$lambda_account)
 
-upd_df <- org_df
-upd_df$u2 <- u_account
-upd_df$lambda_u2 <- lambda_account*u_account
-upd_df$hat_account <- beta_1*df[ , c("AnnualSalary")] + lambda_account*u_account + intercept
-upd_df$diff_account <- upd_df$hat_account - upd_df$AccountBalance
-hist(upd_df$diff_account)
-summary(upd_df$diff_account)
-plot(upd_df$diff_account)
+b0.asalary <- mean(la_train_v2$beta_0_asalary)
+print(b0.asalary)
 
-mse_account <- round( sqrt( sum( (upd_df$diff_account)^2 ) / nrow(upd_df) ) )
+# compare to model1!
+b1 <- mean(la_train_v2$beta_1)
+print(b1)
+b0.account <- mean(la_train_v2$beta_0_account)
+print(b0.account)
 
-mse_account*100/mean(upd_df$AccountBalance) # the MSE is 8% of the mean.. not terrible, no?
+hist(lambda.account*z) # too small to shift the weights!
+
+
+
+
+
 
 
 
