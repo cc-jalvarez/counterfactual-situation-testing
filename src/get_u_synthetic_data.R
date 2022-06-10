@@ -48,7 +48,8 @@ hist(org_df$u2, add=TRUE)
 # Prepare data for Stan
 train_v2 <- list(N = nrow(df),
                  asalary = df[ , c("AnnualSalary")],
-                 account = df[ , c("AccountBalance")]
+                 account = df[ , c("AccountBalance")],
+                 scale_z = 3000
                  )
 
 # FIT: run the MCMC
