@@ -101,13 +101,21 @@ plot(u2_hat2)
 plot(org_df$u2)
 plot(u2_hat2 - org_df$u2)
 
-# compare all three?
+# compare all three for u2?
 hist(u2_hat, col = 'red',)
 hist(u2_hat2, col = 'blue', add=TRUE)
 hist(org_df$u2,  add=TRUE)
 # clearly we improve the estimation of u2!
 
+# what about u1?
+hist(df2$AnnualSalary, col='red', )
+hist(df2$AnnualSalary - (b0.asalary + lambda.asalary*df2$Z), col='blue', add=TRUE)
+hist(org_df$u2, add=TRUE)
+# not a huge issue as we take x1 as a given... and when intervened, we also
+# intervene the whole thing (despite the confounded)
 
+hist(org_df$z)
+hist(df2$Z, col='blue', add=TRUE) # this is the issue! I need the second moment!
 
 #
 # EOF
