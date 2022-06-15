@@ -44,7 +44,7 @@ plot(org_df$u2)
 plot(u2_hat - org_df$u2)
 
 hist(u2_hat)
-hist(org_df$u2, add=TRUE)
+hist(org_df$u2, col='blue', add=TRUE)
 
 # ---
 # Prepare data for Stan
@@ -78,6 +78,8 @@ b0.asalary <- mean(la_train_v2$beta_0_asalary)
 print(b0.asalary)
 
 # compare to model1!
+model1
+
 b1 <- mean(la_train_v2$beta_1)
 print(b1)
 b0.account <- mean(la_train_v2$beta_0_account)
@@ -91,7 +93,6 @@ summary(df$AccountBalance - (b0.account + b1*df$AccountBalance + lambda.account*
 # what if I add z as is?
 df2 <- df
 df2$Z <- z
-
 
 model2 <- lm(AccountBalance ~ AnnualSalary + Z + 1, data = df2)
 model2
