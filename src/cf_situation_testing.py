@@ -74,7 +74,7 @@ def get_k_neighbors(df: DataFrame, cf_df: DataFrame, k: int, feat_trgt: List[str
     # define tst centers; tst search is updated within loop!
     centers_tst = search_tst_group.iloc[protected_indices].copy()
 
-    for ind in tqdm(protected_indices):
+    for ind in protected_indices:
 
         # for ind's storing the neighbors
         temp_dict_df_neighbors = {}
@@ -105,11 +105,11 @@ def get_k_neighbors(df: DataFrame, cf_df: DataFrame, k: int, feat_trgt: List[str
         # clean
         del ind_center_ctr, knn_1, temp_ctr_df, indices_1, distances_1
 
-        # tst neighborhood (first update search space with tst center)
+        # tst neighborhood: update first the search space with tst center)
         temp_search_tst_group = search_tst_group.iloc[[ind] + non_protected_indices].copy()
         temp_search_tst_group.reset_index(inplace=True, )
         temp_search_tst_group.rename(columns={'index': 'org_index'}, inplace=True)
-
+        # tst neighborhood
         knn_2 = NearestNeighbors(n_neighbors=k + 1, algorithm='ball_tree', metric=d).fit(temp_search_tst_group[feat_rlvt])
         distances_2, indices_2 = knn_2.kneighbors(ind_center_tst)
 
@@ -117,7 +117,6 @@ def get_k_neighbors(df: DataFrame, cf_df: DataFrame, k: int, feat_trgt: List[str
         temp_tst_df['knn_indices'] = pd.Series(indices_2[0])
         temp_tst_df['knn_distances'] = pd.Series(distances_2[0])
         temp_tst_df.sort_values(by='knn_distances', ascending=True, inplace=True)
-
         temp_tst_df = temp_tst_df.merge(temp_search_tst_group[['org_index']], how='inner', left_on='knn_indices', right_index=True)
         # store
         temp_dict_df_neighbors['test'] = temp_tst_df
@@ -131,7 +130,8 @@ def get_k_neighbors(df: DataFrame, cf_df: DataFrame, k: int, feat_trgt: List[str
     return dict_df_neighbors
 
 
-
+def get_wald_ci():
+    print('todo')
 
 
 
