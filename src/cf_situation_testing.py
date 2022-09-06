@@ -12,9 +12,27 @@ from pandas import DataFrame
 from tqdm import tqdm as progress_bar
 
 
-def get_k_neighbors(df: DataFrame, cf_df: DataFrame, k: int,
-                    feat_trgt: str, feat_trgt_vals: Dict, feat_rlvt: List[str],
-                    feat_prot: str, feat_prot_vals: Dict,
+def run_cf_situation_testing(
+        df: DataFrame, cf_df: DataFrame, k: int,
+        feat_trgt: str, feat_trgt_vals: Dict,
+        feat_rlvt: List[str],
+        feat_prot: str, feat_prot_vals: Dict,
+        d: str = 'manhattan',  standardize: bool = False, weights: Dict = None,
+        alpha: float = 0.05, tau: float = 0.05,
+                             ) -> DataFrame:
+
+    dict_k_neighbors = get_k_neighbors(df, cf_df, k,
+                                       feat_trgt, feat_trgt_vals, feat_rlvt, feat_prot, feat_prot_vals,
+                                       d, standardize, weights, )
+
+    results_cf_st = get_wald_ci(dict_k_neighbors, feat_trgt, feat_trgt_vals, alpha, tau)
+
+    return results_cf_st
+
+
+def get_k_neighbors(df: DataFrame, cf_df: DataFrame,
+                    k: int,
+                    feat_trgt: str, feat_trgt_vals: Dict, feat_rlvt: List[str], feat_prot: str, feat_prot_vals: Dict,
                     d: str = 'manhattan', standardize: bool = False, weights: Dict = None,
                     ) -> Dict[int, Dict[str, DataFrame]]:
 
@@ -139,11 +157,13 @@ def get_k_neighbors(df: DataFrame, cf_df: DataFrame, k: int,
 
 def get_wald_ci(dict_df_neighbors: Dict[int, Dict[str, DataFrame]],
                 feat_trgt: str, feat_trgt_vals: Dict,
-                alpha: float, tau: float = 0.05, ) -> DataFrame:
+                alpha: float = 0.05, tau: float = 0.05,
+                ) -> DataFrame:
 
     # output
     wald_ci = []
 
+    print(f"using significance level of {100*alpha}%")
     z_score = round(st.norm.ppf(1 - (alpha / 2)), 2)
 
     for ind in dict_df_neighbors:
