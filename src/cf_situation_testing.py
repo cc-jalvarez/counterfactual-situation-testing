@@ -37,7 +37,7 @@ def get_k_neighbors(df: DataFrame, cf_df: DataFrame, k: int,
     search_tst_group = cf_df[feat_rlvt].copy()
 
     if standardize:
-        print('standardizing')
+        print('===> standardizing')
 
         # define standard-normal scaler
         scaler = preprocessing.StandardScaler()
@@ -59,7 +59,7 @@ def get_k_neighbors(df: DataFrame, cf_df: DataFrame, k: int,
         del search_tst_group_scaled
 
     if weights:
-        print('weighting')
+        print('===> weighting')
 
         if len(weights) != len(feat_rlvt):
             sys.exit('provide a weight for each relevant feature')
