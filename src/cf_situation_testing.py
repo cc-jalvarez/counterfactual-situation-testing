@@ -12,15 +12,19 @@ from pandas import DataFrame
 from tqdm import tqdm
 
 
-def get_k_neighbors(df: DataFrame, cf_df: DataFrame, k: int, feat_trgt: List[str], feat_trgt_vals: Dict,
-                    feat_rlvt: List[str], feat_prot: str, feat_prot_vals: Dict, d: str = 'manhattan',
-                    standardize: bool = False, weights: Dict = None, ) -> Dict[int, DataFrame]:
+def get_k_neighbors(df: DataFrame, cf_df: DataFrame, k: int,
+                    feat_trgt: str, feat_trgt_vals: Dict, feat_rlvt: List[str],
+                    feat_prot: str, feat_prot_vals: Dict,
+                    d: str = 'manhattan', standardize: bool = False, weights: Dict = None,
+                    ) -> Dict[int, Dict[str, DataFrame]]:
 
-    # output
+    # output:
     dict_df_neighbors = {}
-
-    feat_list = feat_trgt + feat_rlvt
-    feat_list.append(feat_prot)
+    # input(s):
+    feat_list = [feat_trgt] + feat_rlvt + [feat_prot]
+    print(f"target feature {feat_trgt} with values {feat_trgt_vals}")
+    print(f"protected feature {feat_prot} with values {feat_prot_vals}")
+    print(f"with relevant features {feat_list}")
 
     # individuals have the same index across df and cf_df
     protected_indices = df[df[feat_prot] == feat_prot_vals['protected']].index.to_list()
