@@ -9,7 +9,7 @@ from typing import List, Dict
 from sklearn import preprocessing
 from sklearn.neighbors import NearestNeighbors
 from pandas import DataFrame
-from tqdm import tqdm
+from tqdm import tqdm as progress_bar
 
 
 def get_k_neighbors(df: DataFrame, cf_df: DataFrame, k: int,
@@ -24,7 +24,8 @@ def get_k_neighbors(df: DataFrame, cf_df: DataFrame, k: int,
     feat_list = [feat_trgt] + feat_rlvt + [feat_prot]
     print(f"target feature {feat_trgt} with values {feat_trgt_vals}")
     print(f"protected feature {feat_prot} with values {feat_prot_vals}")
-    print(f"with relevant features {feat_list}")
+    print(f"with relevant features {feat_rlvt}")
+    print(f"all features: {feat_list}")
 
     # individuals have the same index across df and cf_df
     protected_indices = df[df[feat_prot] == feat_prot_vals['protected']].index.to_list()
@@ -104,6 +105,7 @@ def get_k_neighbors(df: DataFrame, cf_df: DataFrame, k: int,
         temp_ctr_df['knn_distances'] = pd.Series(distances_1[0])
         temp_ctr_df.sort_values(by='knn_distances', ascending=True, inplace=True)
         temp_ctr_df = temp_ctr_df.merge(search_ctr_group[['org_index']], how='inner', left_on='knn_indices', right_index=True)
+        temp_ctr_df = temp_ctr_df.merge(df[feat_list], how='inner', left_on='org_index', right_index=True)
         # store
         temp_dict_df_neighbors['control'] = temp_ctr_df
         # clean
@@ -122,6 +124,7 @@ def get_k_neighbors(df: DataFrame, cf_df: DataFrame, k: int,
         temp_tst_df['knn_distances'] = pd.Series(distances_2[0])
         temp_tst_df.sort_values(by='knn_distances', ascending=True, inplace=True)
         temp_tst_df = temp_tst_df.merge(temp_search_tst_group[['org_index']], how='inner', left_on='knn_indices', right_index=True)
+        temp_tst_df = temp_tst_df.merge(cf_df[feat_list], how='inner', left_on='org_index', right_index=True)
         # store
         temp_dict_df_neighbors['test'] = temp_tst_df
         # clean
@@ -134,7 +137,32 @@ def get_k_neighbors(df: DataFrame, cf_df: DataFrame, k: int,
     return dict_df_neighbors
 
 
-def get_wald_ci():
+def get_wald_ci(dict_df_neighbors: Dict[int, Dict[str, DataFrame]],
+                feat_trgt: str, feat_trgt_vals: Dict,
+                feat_rlvt: List[str], feat_prot: str, feat_prot_vals: Dict,
+                alpha: float, tau: float, ):
+
+    # feat_list = [feat_trgt] + feat_rlvt + [feat_prot]
+
+    z_score = round(st.norm.ppf(1 - (alpha / 2)), 2)
+
+    for ind in dict_df_neighbors:
+
+        ctr_group = dict_df_neighbors[ind]['control']
+        # ctr_group = ctr_group.merge(df[feat_list], how='inner', left_on='org_index', right_index=True)
+
+        tst_group = dict_df_neighbors[ind]['test']
+        # tst_group = tst_group.merge(cf_df[feat_list], how='inner', left_on='org_index', right_index=True)
+
+        p1 = ctr_group[ctr_group[feat_trgt] == feat_trgt_vals['neg']].shape[0] / ctr_group.shape[0]
+        p2 = tst_group[tst_group[feat_trgt] == feat_trgt_vals['neg']].shape[0] / tst_group.shape[0]
+        k1 = ctr_group.shape[0]
+        k2 = tst_group.shape[0]
+        # diff = p1 - p2
+
+        d_alpha = z_score * math.sqrt((p1 * (1 - p1) / k1) + (p2 * (1 - p2) / k2))
+
+
     print('todo')
 
 
