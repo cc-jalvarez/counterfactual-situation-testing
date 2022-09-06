@@ -139,10 +139,10 @@ def get_k_neighbors(df: DataFrame, cf_df: DataFrame, k: int,
 
 def get_wald_ci(dict_df_neighbors: Dict[int, Dict[str, DataFrame]],
                 feat_trgt: str, feat_trgt_vals: Dict,
-                feat_rlvt: List[str], feat_prot: str, feat_prot_vals: Dict,
-                alpha: float, tau: float, ):
+                alpha: float, tau: float = 0.05, ) -> DataFrame:
 
-    # feat_list = [feat_trgt] + feat_rlvt + [feat_prot]
+    # output
+    wald_ci = []
 
     z_score = round(st.norm.ppf(1 - (alpha / 2)), 2)
 
@@ -158,12 +158,43 @@ def get_wald_ci(dict_df_neighbors: Dict[int, Dict[str, DataFrame]],
         p2 = tst_group[tst_group[feat_trgt] == feat_trgt_vals['neg']].shape[0] / tst_group.shape[0]
         k1 = ctr_group.shape[0]
         k2 = tst_group.shape[0]
-        # diff = p1 - p2
 
         d_alpha = z_score * math.sqrt((p1 * (1 - p1) / k1) + (p2 * (1 - p2) / k2))
+        conf_inter = [(p1 - p2) - d_alpha, (p1 - p2) + d_alpha]
+        org_diff = round(p1 - p2, 3)
+        if (p1 - p2) >= 0:  # from ST paper #1 todo: can also do some tests on the attributes?
+            diff = max(0, p1 - p2 - d_alpha)
+        else:
+            diff = min(0, p1 - p2 + d_alpha)
 
+        # discrimination evidence:
+        if org_diff > tau:  # from ST paper #2 todo: can also use CIs?
+            cf_st = 'Yes'
+        else:
+            cf_st = 'No'
 
-    print('todo')
+        # per ind results
+        wald_ci.append(
+            {
+                'individual': ind,
+                'p1': p1,
+                'p2': p2,
+                'org_diff': org_diff,
+                'd_alpha': d_alpha,
+                'diff': diff,
+                'CIs': conf_inter,
+                'cfST': cf_st
+            }
+        )
 
+        # clean
+        del ctr_group, tst_group, p1, p2, k1, k2, org_diff, d_alpha, conf_inter, diff, cf_st
 
+    # store results as a df
+    df = pd.DataFrame(wald_ci)
 
+    return df
+
+#
+# EOF
+#
