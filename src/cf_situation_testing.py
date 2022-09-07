@@ -45,6 +45,9 @@ def get_k_neighbors(df: DataFrame, cf_df: DataFrame,
     print(f"with relevant features {feat_rlvt}")
     print(f"all features: {feat_list}")
 
+    # TODO: how do handle categorical vars?
+    # TODO: also, how to inpud such indo into the func?
+
     # individuals have the same index across df and cf_df
     protected_indices = df[df[feat_prot] == feat_prot_vals['protected']].index.to_list()
     non_protected_indices = df[df[feat_prot] == feat_prot_vals['non_protected']].index.to_list()
