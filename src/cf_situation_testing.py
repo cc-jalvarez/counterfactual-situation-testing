@@ -167,6 +167,7 @@ def get_wald_ci(dict_df_neighbors: Dict[int, Dict[str, DataFrame]],
     wald_ci = []
 
     print(f"using significance level of {100*alpha}%")
+    print(f"using tau-deviation of {tau}")
     z_score = round(st.norm.ppf(1 - (alpha / 2)), 2)
 
     for ind in dict_df_neighbors:
@@ -191,7 +192,7 @@ def get_wald_ci(dict_df_neighbors: Dict[int, Dict[str, DataFrame]],
             diff = min(0, p1 - p2 + d_alpha)
 
         # discrimination evidence:
-        if org_diff > tau:  # from ST paper #2 todo: can also use CIs?
+        if org_diff > tau:
             cf_st = 'Yes'
         else:
             cf_st = 'No'
