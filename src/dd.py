@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 dd Discrimination Discovery module
-
 @author: Salvatore Ruggieri
 """
 
@@ -813,7 +812,7 @@ class ID:
         q = [(-v, i) for v, i in q]
         return sorted(q)
 
-    def topkdiff(self, df, unpro, pro, class_att, distf, k, maxd=None):
+    def topkdiff(self, df, unpro, pro, predBadItem, distf, k, maxd=None):
         """ Compute risk difference for each instance in protected set.
 
         Parameters:
@@ -828,6 +827,8 @@ class ID:
         Returns:
         Series: risk difference between topk protected and topk unprotected for protected instances, and zero for all other instances in the dataframe df
         """
+        class_att = get_att(predBadItem)
+        bad_dec = int(get_val(predBadItem))
         res = pd.Series(np.zeros(len(df)), index=df.index)
         unpro_set = df[unpro]
         if not isinstance(pro, list):
@@ -840,8 +841,8 @@ class ID:
                 nn1 = [j for _, j in res1 if j != i]
                 nn2 = [j for _, j in res2]
                 # efficient but specific of RD
-                p1 = sum(pro_set.loc[nn1, class_att] == 0) / len(nn1)
-                p2 = sum(unpro_set.loc[nn2, class_att] == 0) / len(nn2)
+                p1 = sum(pro_set.loc[nn1, class_att] == bad_dec) / len(nn1)
+                p2 = sum(unpro_set.loc[nn2, class_att] == bad_dec) / len(nn2)
                 res.loc[i] = p1 - p2
         return res
 
@@ -887,5 +888,5 @@ if __name__ == '__main__':
     print('Contingency tables: {}'.format(len(ctgs)))
 
 #
-# EOF @ 07/09/22
+# EOF @ 16/09/22
 #
