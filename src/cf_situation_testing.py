@@ -160,7 +160,7 @@ def get_k_neighbors(df: DataFrame, cf_df: DataFrame,
 
 def get_wald_ci(dict_df_neighbors: Dict[int, Dict[str, DataFrame]],
                 feat_trgt: str, feat_trgt_vals: Dict,
-                alpha: float = 0.05, tau: float = 0.05,
+                alpha: float = 0.05, tau: float = 0.0,
                 ) -> DataFrame:
 
     # output
