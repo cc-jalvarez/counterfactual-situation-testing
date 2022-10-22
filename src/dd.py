@@ -798,7 +798,7 @@ class ID:
         Returns:
         list of pairs: list of (distance, index) of the up-to-k closest instances to t that are at a distance of at most maxd
         """
-        ds = distf(t, tset)
+        ds = distf(t, tset)  # todo: why not just use kdd?
         q = []
         lenq = 0
         for i, d in zip(tset.index, ds):
