@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 
 
-def _kdd2011dist(t: Dict, tset: DataFrame, atts_types: Dict[str, List[str]]) -> Series:
+def kdd2011dist(t: Dict, tset: DataFrame, atts_types: Dict[str, List[str]]) -> Series:
 
     # todo: relax the following assumptions
     # assumes distance estimation for one-to-many tuples
