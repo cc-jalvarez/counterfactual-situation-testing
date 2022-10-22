@@ -50,10 +50,9 @@ class SituationTesting:
         # self.stds_pos = {self.continuous_atts_pos[i]: self.stds[c] for i, c in enumerate(continuous_atts)}
         # self.nofvalues_pos = {self.ordinal_atts_pos[i]: self.nofvalues[c] for i, c in enumerate(ordinal_atts)}
 
-    @staticmethod
-    def top_k(t, tset, distance: str, k: int, max_d: float = None) -> List[Tuple[float, int]]:
+    def top_k(self, t, tset, distance: str, k: int, max_d: float = None) -> List[Tuple[float, int]]:
         # get distance function
-        ds = __DISTANCES__[distance](t, tset)  # todo: or add __DISTANCES__ to class and call via self
+        ds = __DISTANCES__[distance](t, tset, self.all_atts)  # todo: or add __DISTANCES__ to class and call via self
         q = []
         lenq = 0
         for i, d in zip(tset.index, ds):
