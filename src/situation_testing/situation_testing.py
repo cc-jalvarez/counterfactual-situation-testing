@@ -132,11 +132,11 @@ class SituationTesting:
         # for A in sensitive_att: TODO
         for i, row in ctr_search[self.relevant_atts].iterrows():
             ctr_k = self.top_k(row, ctr_search[self.relevant_atts], k + 1, distance, max_d)
-            tst_k = self.top_k(row, tst_search[self.relevant_atts], k, distance, max_d)
+            tst_k = self.top_k(row, tst_search[self.relevant_atts], k, distance, max_d)  # todo: need the CF!
             nn1 = [j for _, j in ctr_k if j != i]  # idx for ctr_k (minus center)
             nn2 = [j for _, j in tst_k]            # idx for tst_k
             p1 = sum(self.df.loc[nn1, ][target_att] == bad_y_val) / len(nn1)
-            p2 = sum(self.cf_df.loc[nn2, ][target_att] == bad_y_val) / len(nn2)
+            p2 = sum(self.cf_df.loc[nn2, ][target_att] == bad_y_val) / len(nn2) # todo can queery df here!!!
             res_st.loc[i] = round(p1 - p2, 3)
             if dict_df_neighbors:
                 i_dict_df_neighbors = {'ctr_idx': nn1, 'tst_idx': nn2}
