@@ -45,9 +45,6 @@ def get_k_neighbors(df: DataFrame, cf_df: DataFrame,
     print(f"with relevant features {feat_rlvt}")
     print(f"all features: {feat_list}")
 
-    # TODO: how do handle categorical vars?
-    # TODO: also, how to inpud such indo into the func?
-
     # individuals have the same index across df and cf_df
     protected_indices = df[df[feat_prot] == feat_prot_vals['protected']].index.to_list()
     non_protected_indices = df[df[feat_prot] == feat_prot_vals['non_protected']].index.to_list()
@@ -186,7 +183,7 @@ def get_wald_ci(dict_df_neighbors: Dict[int, Dict[str, DataFrame]],
         d_alpha = z_score * math.sqrt((p1 * (1 - p1) / k1) + (p2 * (1 - p2) / k2))
         conf_inter = [(p1 - p2) - d_alpha, (p1 - p2) + d_alpha]
         org_diff = round(p1 - p2, 3)
-        if (p1 - p2) >= 0:  # from ST paper #1 todo: can also do some tests on the attributes?
+        if (p1 - p2) >= 0:  # from ST paper #1
             diff = max(0, p1 - p2 - d_alpha)
         else:
             diff = min(0, p1 - p2 + d_alpha)

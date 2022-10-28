@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-dd Discrimination Discovery module
-@author: Salvatore Ruggieri
-"""
-
 import numpy as np
 import pandas as pd
 import pyroaring
@@ -838,7 +832,7 @@ class ID:
             for i, rowp in pro_set.iterrows():
                 res1 = self.topk(rowp, pro_set, distf, k + 1, maxd=maxd)
                 res2 = self.topk(rowp, unpro_set, distf, k, maxd=maxd)
-                nn1 = [j for _, j in res1 if j != i]
+                nn1 = [j for _, j in res1 if j != i]  # removes the center
                 nn2 = [j for _, j in res2]
                 # efficient but specific of RD
                 p1 = sum(pro_set.loc[nn1, class_att] == bad_dec) / len(nn1)
@@ -846,47 +840,6 @@ class ID:
                 res.loc[i] = p1 - p2
         return res
 
-
-""" Sample usage of DD"""
-if __name__ == '__main__':
-
-    def check_acc(ctg):
-        n = ctg.n()
-        if n == 0:
-            return None  # this may occur for relative contingency table
-        acc = max(ctg.a, ctg.c) / n
-        return (int(acc * n / 10), acc) if acc > 0.9 and n > 10 else None
-
-
-    start_time = time.perf_counter()
-
-    # disc = DD("../data/credit.csv", 'age=from_41d4_le_52d6', 'class=bad')
-    disc = DD("../data/credit.csv", 'class=good')
-    print('== Global ==')
-    for ctg in disc.ctg_global():
-        disc.print(ctg)
-        # print("RD = {:f}".format(ctg.rd()))
-        # print("ACC = {:.2f}".format(check_acc(ctg)))
-    ctgs = disc.extract(testCond=check_acc, minSupp=-20, topk=2000)
-    print('== Top ==')
-    for v, ctg in ctgs[:2]:
-        disc.print(ctg)
-        # print("RD = {:f}".format(v))
-        # print("ACC = {:.2f}".format(check_acc(ctg)))
-    print('== Rel top1 ==')
-    disc.print(disc.ctg_rel(ctgs[0][1], disc.itDB.cover_all()))
-    covers, residuals, times, uncovered, ctg_cov, ctg_uncov = disc.cover_n([ctg for _, ctg in ctgs], check_acc, 100)
-    print('== Cover ==')
-    for ctg, res in zip(covers, residuals):
-        print(res)
-        disc.print(ctg)
-        # print("ACC = {:.2f}".format(check_acc(ctg)))
-        # print("RD = {:f}".format(ctg.rd()))
-
-    elapsed_time = time.perf_counter() - start_time
-    print('Elapsed time (s): {:.2f}'.format(elapsed_time))
-    print('Contingency tables: {}'.format(len(ctgs)))
-
 #
-# EOF @ 16/09/22
+# EOF
 #
