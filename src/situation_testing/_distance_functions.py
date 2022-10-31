@@ -41,9 +41,9 @@ def kdd2011dist(t: Dict, tset: DataFrame, relevant_atts: List[str], atts_types: 
     return tot.divide(n_atts)
 
 
-def manhattan(t: Dict, tset: DataFrame, atts_types: Dict[str, List[str]]) -> Series:
+def manhattan(t: Dict, tset: DataFrame, relevant_atts: List[str], atts_types: Dict[str, List[str]]) -> Series:
     tot = pd.Series(np.zeros(len(tset)), index=tset.index)
-    for c in tset.columns:
+    for c in relevant_atts:
         dist = abs(t[c] - tset[c]) / (max(tset[c]) - min(tset[c]))
         tot += dist
     n_atts = len(atts_types['continuous_atts']) + len(atts_types['ordinal_atts']) + len(atts_types['nominal_atts'])
