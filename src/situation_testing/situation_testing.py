@@ -88,17 +88,13 @@ class SituationTesting:
     #     pass
 
     def get_k_neighbors(self,
-                        target_att: str, target_val: Dict,
-                        sensitive_att: str or List[str], sensitive_val: Dict,
-                        k: int,
-                        distance: str = 'kdd2011', max_d: float = None,
-                        relevant_atts: List[str] = None,
-                        return_counterfactual_fairness: bool = False,
-                        return_neighbors: bool = False):
+                        target_att: str, target_val: Dict, sensitive_att: str or List[str], sensitive_val: Dict, k: int,
+                        distance: str = 'kdd2011', max_d: float = None, relevant_atts: List[str] = None,
+                        return_counterfactual_fairness: bool = False, return_neighbors: bool = False):
 
-        # output
+        # output:
         res_st = pd.Series(np.zeros(len(self.df)), index=self.df.index)
-        # additional outputs
+        # extra outputs:
         if return_neighbors:
             dict_df_neighbors = {}
         else:
@@ -107,44 +103,44 @@ class SituationTesting:
             res_cf = pd.Series(np.zeros(len(self.df)), index=self.df.index)
         else:
             res_cf = None
-
-        # consider only the relevant decision-making attributes: don't include A nor y
+        # relevant decision-making attributes doesn't include A nor y
         self.relevant_atts = relevant_atts if relevant_atts else self.relevant_atts
+
+        # todo: atm, only |A|=1
         # gather info for control (ctr) and test (tst) groups
-        # if isinstance(sensitive_att, list): # todo: atm, only |A|=1
+        # if isinstance(sensitive_att, list):
         #     print('multiple/intersectional discrimination')
         # else:
+        # todo: turn it into a list to follow dd loop
+        # sensitive_att = [sensitive_att]
+
         bad_y_val = get_neg_value(target_val)
         sensitive_val = get_pro_value(sensitive_val)
-        ctr_set = self.df[sensitive_att] == sensitive_val  # returns a pd.Series of booleans
-        ctr_idx = self.df[ctr_set].index.to_list()
-        tst_idx = self.df[~ctr_set].index.to_list()
-        # sensitive_att = [sensitive_att]  # todo: turn it into a list to follow dd loop
-        # define the search spaces
-        ctr_search = self.df[ctr_set].copy()
-        if self.cf_df:
-            print('running counterfactual ST search')
-            tst_search = self.cf_df[~ctr_set].copy()
-        else:
-            print('running standard ST search')
-            tst_search = self.df[~ctr_search].copy()
-        # find k-control and k-test neighbors
-        # for A in sensitive_att: TODO
-        for i, row in ctr_search[self.relevant_atts].iterrows():
-            ctr_k = self.top_k(row, ctr_search[self.relevant_atts], k + 1, distance, max_d)
-            tst_k = self.top_k(row, tst_search[self.relevant_atts], k, distance, max_d)  # todo: need the CF!
-            nn1 = [j for _, j in ctr_k if j != i]  # idx for ctr_k (minus center)
+        sensitive_set = self.df[sensitive_att] == sensitive_val  # returns a pd.Series of booleans
+        # define search spaces
+        ctr_search = self.df[sensitive_set].copy()
+        tst_search = self.df[~sensitive_set].copy()
+        # find idx for control and test neighborhoods
+        for c in self.df[sensitive_set].index.to_list():
+            ctr_k = self.top_k(self.df.loc[c, ], ctr_search[self.relevant_atts], k + 1, distance, max_d)
+            if self.cf_df:
+                # cfST: draw test center from counterfactual df
+                tst_k = self.top_k(self.cf_df.loc[c, ], tst_search[self.relevant_atts], k, distance, max_d)
+            else:
+                # standard ST: draw test center from factual df
+                tst_k = self.top_k(self.df.loc[c, ], tst_search[self.relevant_atts], k, distance, max_d)
+            nn1 = [j for _, j in ctr_k if j != c]  # idx for ctr_k (minus center)
             nn2 = [j for _, j in tst_k]            # idx for tst_k
             p1 = sum(self.df.loc[nn1, ][target_att] == bad_y_val) / len(nn1)
-            p2 = sum(self.cf_df.loc[nn2, ][target_att] == bad_y_val) / len(nn2) # todo can queery df here!!!
-            res_st.loc[i] = round(p1 - p2, 3)
+            p2 = sum(self.cf_df.loc[nn2, ][target_att] == bad_y_val) / len(nn2)
+            # output(s)
+            res_st.loc[c] = round(p1 - p2, 3)
             if dict_df_neighbors:
-                i_dict_df_neighbors = {'ctr_idx': nn1, 'tst_idx': nn2}
-                dict_df_neighbors[int(i)] = i_dict_df_neighbors
+                dict_df_neighbors[int(c)] = {'ctr_idx': nn1, 'tst_idx': nn2}
             if res_cf:
-                if self.df.loc[i, target_att] == self.cf_df.loc[i, target_att] == bad_y_val:
-                    res_cf[i] = 'Yes'
+                if self.df.loc[c, target_att] == self.cf_df.loc[c, target_att]:
+                    res_cf[c] = True
                 else:
-                    res_cf[i] = 'No'
+                    res_cf[c] = False
 
         return res_st, dict_df_neighbors, res_cf
