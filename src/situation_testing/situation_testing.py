@@ -5,10 +5,11 @@ import heapq
 import math
 import pandas as pd
 import numpy as np
-
+import scipy.stats as st
 # local
 from _distance_functions import kdd2011dist
 from _utils import *
+
 
 __DISTANCES__ = {'kdd2011': kdd2011dist}
 
@@ -26,8 +27,12 @@ class SituationTesting:
         self.continuous_atts_pos = None
         self.ordinal_atts_pos = None
         self.natts = None
+        self.res_dict_df_neighbors = None
+        self.res_cf = None
+        self.wald_ci = None
 
-    def setup_baseline(self, df: DataFrame, cf_df: DataFrame = None,
+    def setup_baseline(self, df: DataFrame,
+                       cf_df: DataFrame = None,
                        nominal_atts: List[str] = None,
                        continuous_atts: List[str] = None,
                        ordinal_atts: List[str] = None,
@@ -87,23 +92,18 @@ class SituationTesting:
     #
     #     pass
 
-    def get_k_neighbors(self,
-                        target_att: str, target_val: Dict,
-                        sensitive_att: str or List[str], sensitive_val: Dict,
-                        k: int, distance: str = 'kdd2011', max_d: float = None,
-                        return_counterfactual_fairness: bool = False, return_neighbors: bool = False):
+    def run(self, target_att: str, target_val: Dict, sensitive_att: str or List[str], sensitive_val: Dict, k: int,
+            alpha: float = 0.05, tau: float = 0.0, distance: str = 'kdd2011', max_d: float = None,
+            return_counterfactual_fairness: bool = True, return_neighbors: bool = True):
 
-        # output:
+        # outputs:
         res_st = pd.Series(np.zeros(len(self.df)), index=self.df.index)
-        # extra outputs:
+        self.wald_ci = []
+        # other outputs:
         if return_neighbors:
-            dict_df_neighbors = {}
-        else:
-            dict_df_neighbors = None
+            self.res_dict_df_neighbors = {}
         if return_counterfactual_fairness:
-            res_cf = pd.Series(np.zeros(len(self.df)), index=self.df.index)
-        else:
-            res_cf = None
+            self.res_cf = pd.Series(np.zeros(len(self.df)), index=self.df.index)
 
         # todo: atm, only |A|=1
         # gather info for control (ctr) and test (tst) groups
@@ -130,16 +130,49 @@ class SituationTesting:
                 tst_k = self.top_k(self.df.loc[c, ], tst_search, k, distance, max_d)
             nn1 = [j for _, j in ctr_k if j != c]  # idx for ctr_k (minus center)
             nn2 = [j for _, j in tst_k]            # idx for tst_k
-            p1 = sum(self.df.loc[nn1, ][target_att] == bad_y_val) / len(nn1)
-            p2 = sum(self.cf_df.loc[nn2, ][target_att] == bad_y_val) / len(nn2)
+            k1 = len(nn1)
+            k2 = len(nn2)
+            p1 = sum(self.df.loc[nn1, ][target_att] == bad_y_val) / k1
+            p2 = sum(self.cf_df.loc[nn2, ][target_att] == bad_y_val) / k2
             # output(s)
-            res_st.loc[c] = round(p1 - p2, 3)
-            if dict_df_neighbors:
-                dict_df_neighbors[int(c)] = {'ctr_idx': nn1, 'tst_idx': nn2}
-            if res_cf:
+            res_st.loc[c] = round(p1 - p2, 3)  # diff
+            self._test_discrimination(c, p1, p2, k1, k2, alpha, tau)  # statistical diff
+            if self.res_dict_df_neighbors:
+                self.res_dict_df_neighbors[int(c)] = {'ctr_idx': nn1, 'tst_idx': nn2}
+            if self.res_cf:
                 if self.df.loc[c, target_att] == self.cf_df.loc[c, target_att]:
-                    res_cf[c] = True
+                    self.res_cf[c] = True
                 else:
-                    res_cf[c] = False
+                    self.res_cf[c] = False
 
-        return res_st, dict_df_neighbors, res_cf
+        return res_st
+
+    def _test_discrimination(self, ind, p1, p2, k1, k2, alpha, tau):
+        z_score = round(st.norm.ppf(1 - (alpha / 2)), 2)
+        d_alpha = z_score * math.sqrt((p1 * (1 - p1) / k1) + (p2 * (1 - p2) / k2))
+        conf_inter = [(p1 - p2) - d_alpha, (p1 - p2) + d_alpha]
+        org_diff = round(p1 - p2, 3)
+        if (p1 - p2) >= 0:  # from ST paper #1
+            diff = max(0, p1 - p2 - d_alpha)
+        else:
+            diff = min(0, p1 - p2 + d_alpha)
+        # discrimination evidence:
+        if org_diff > tau:
+            cf_st = 'Yes'
+        else:
+            cf_st = 'No'
+        self.wald_ci.append(
+            {
+                'individual': ind,
+                'p1': p1,
+                'p2': p2,
+                'org_diff': org_diff,
+                'd_alpha': d_alpha,
+                'diff': diff,
+                'CIs': conf_inter,
+                'cfST': cf_st
+            }
+        )
+
+    def get_test_discrimination(self):
+        return pd.DataFrame(self.wald_ci)
