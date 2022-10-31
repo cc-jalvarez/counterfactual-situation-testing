@@ -7,8 +7,8 @@ import pandas as pd
 import numpy as np
 import scipy.stats as st
 # local
-from _distance_functions import kdd2011dist
-from _utils import *
+from src.situation_testing._distance_functions import kdd2011dist
+from src.situation_testing._utils import *
 
 
 __DISTANCES__ = {'kdd2011': kdd2011dist}
@@ -35,16 +35,18 @@ class SituationTesting:
                        cf_df: DataFrame = None,
                        nominal_atts: List[str] = None,
                        continuous_atts: List[str] = None,
-                       ordinal_atts: List[str] = None,
-                       ):
+                       ordinal_atts: List[str] = None):
         self.df = df
         self.cf_df = cf_df
-        self.nominal_atts = [] if nominal_atts is None else nominal_atts
-        self.continuous_atts = [] if continuous_atts is None else continuous_atts
-        self.ordinal_atts = [] if ordinal_atts is None else ordinal_atts
+        nominal_atts = [] if nominal_atts is None else nominal_atts
+        continuous_atts = [] if continuous_atts is None else continuous_atts
+        ordinal_atts = [] if ordinal_atts is None else ordinal_atts
+        self.nominal_atts = nominal_atts
+        self.continuous_atts = continuous_atts
+        self.ordinal_atts = ordinal_atts
         self.relevant_atts = self.nominal_atts + self.continuous_atts + self.ordinal_atts
         self.all_atts = {'nominal_atts': self.nominal_atts,
-                         'continuous_atts': self.nominal_atts,
+                         'continuous_atts': self.continuous_atts,
                          'ordinal_atts': self.ordinal_atts}
         cols = list(df.columns)
         self.nominal_atts_pos = [cols.index(c) for c in nominal_atts]
@@ -65,7 +67,7 @@ class SituationTesting:
         Returns:
         list of pairs: list of (distance, index) of the k closest instances to t at a distance of at most max_d
         """
-        ds = __DISTANCES__[distance](t, tset, self.all_atts)
+        ds = __DISTANCES__[distance](t, tset, self.relevant_atts, self.all_atts)
         q = []
         lenq = 0
         for i, d in zip(tset.index, ds):
@@ -102,7 +104,7 @@ class SituationTesting:
         # other outputs:
         if return_neighbors:
             self.res_dict_df_neighbors = {}
-        if return_counterfactual_fairness:
+        if return_counterfactual_fairness and self.cf_df:
             self.res_cf = pd.Series(np.zeros(len(self.df)), index=self.df.index)
 
         # todo: atm, only |A|=1
@@ -113,27 +115,29 @@ class SituationTesting:
         # todo: turn it into a list to follow dd loop
         # sensitive_att = [sensitive_att]
 
+        # update relevant attribute list: exclude target and sensitive att(s)
+        self.relevant_atts = [att for att in self.relevant_atts if att not in sensitive_att or att == target_att]
         bad_y_val = get_neg_value(target_val)
         sensitive_val = get_pro_value(sensitive_val)
         sensitive_set = self.df[sensitive_att] == sensitive_val  # returns a pd.Series of booleans
         # define search spaces
-        ctr_search = self.df[sensitive_set, self.relevant_atts].copy()
-        tst_search = self.df[~sensitive_set, self.relevant_atts].copy()
+        ctr_search = self.df.loc[sensitive_set, self.relevant_atts].copy()
+        tst_search = self.df.loc[~sensitive_set, self.relevant_atts].copy()
         # find idx for control and test neighborhoods
         for c in self.df[sensitive_set].index.to_list():
-            ctr_k = self.top_k(self.df.loc[c, ], ctr_search, k + 1, distance, max_d)
+            ctr_k = self.top_k(self.df.loc[c, self.relevant_atts], ctr_search, k + 1, distance, max_d)
             if self.cf_df:
                 # cfST: draw test center from counterfactual df
-                tst_k = self.top_k(self.cf_df.loc[c, ], tst_search, k, distance, max_d)
+                tst_k = self.top_k(self.cf_df.loc[c, self.relevant_atts], tst_search, k, distance, max_d)
             else:
                 # standard ST: draw test center from factual df
-                tst_k = self.top_k(self.df.loc[c, ], tst_search, k, distance, max_d)
+                tst_k = self.top_k(self.df.loc[c, self.relevant_atts], tst_search, k, distance, max_d)
             nn1 = [j for _, j in ctr_k if j != c]  # idx for ctr_k (minus center)
             nn2 = [j for _, j in tst_k]            # idx for tst_k
             k1 = len(nn1)
             k2 = len(nn2)
-            p1 = sum(self.df.loc[nn1, ][target_att] == bad_y_val) / k1
-            p2 = sum(self.cf_df.loc[nn2, ][target_att] == bad_y_val) / k2
+            p1 = sum(self.df.loc[nn1, target_att] == bad_y_val) / k1
+            p2 = sum(self.df.loc[nn2, target_att] == bad_y_val) / k2
             # output(s)
             res_st.loc[c] = round(p1 - p2, 3)  # diff
             self._test_discrimination(c, p1, p2, k1, k2, alpha, tau)  # statistical diff

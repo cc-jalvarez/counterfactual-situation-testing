@@ -13,3 +13,7 @@ def get_neg_value(target_val: Dict):
         return target_val['negative']
     else:
         raise ValueError("missing 'negative' key in dict value for the target attribute")
+
+#
+# EOF
+#
