@@ -57,7 +57,7 @@ class SituationTesting:
         # normalize the data
         scaler = preprocessing.StandardScaler()
         self.df[self.continuous_atts] = scaler.fit_transform(self.df[self.continuous_atts])
-        if self.cf_df:
+        if self.cf_df is not None:
             self.cf_df[self.continuous_atts] = scaler.fit_transform(self.cf_df[self.continuous_atts])
 
     def top_k(self, t, tset, k: int, distance: str, max_d: float = None) -> List[Tuple[float, int]]:
@@ -104,8 +104,10 @@ class SituationTesting:
         # other outputs:
         if return_neighbors:
             self.res_dict_df_neighbors = {}
-        if return_counterfactual_fairness and self.cf_df:
+        if return_counterfactual_fairness and self.cf_df is not None:
             self.res_cf = pd.Series(np.zeros(len(self.df)), index=self.df.index)
+        else:
+            return_counterfactual_fairness = False
 
         # todo: atm, only |A|=1
         # gather info for control (ctr) and test (tst) groups
@@ -126,7 +128,7 @@ class SituationTesting:
         # find idx for control and test neighborhoods
         for c in self.df[sensitive_set].index.to_list():
             ctr_k = self.top_k(self.df.loc[c, self.relevant_atts], ctr_search, k + 1, distance, max_d)
-            if self.cf_df:
+            if self.cf_df is not None:
                 # cfST: draw test center from counterfactual df
                 tst_k = self.top_k(self.cf_df.loc[c, self.relevant_atts], tst_search, k, distance, max_d)
             else:
@@ -141,9 +143,9 @@ class SituationTesting:
             # output(s)
             res_st.loc[c] = round(p1 - p2, 3)  # diff
             self._test_discrimination(c, p1, p2, k1, k2, alpha, tau)  # statistical diff
-            if self.res_dict_df_neighbors:
+            if return_neighbors:
                 self.res_dict_df_neighbors[int(c)] = {'ctr_idx': nn1, 'tst_idx': nn2}
-            if self.res_cf:
+            if return_counterfactual_fairness:
                 if self.df.loc[c, target_att] == self.cf_df.loc[c, target_att]:
                     self.res_cf[c] = True
                 else:
