@@ -56,8 +56,10 @@ class SituationTesting:
         self.natts = len(continuous_atts) + len(nominal_atts) + len(ordinal_atts)
         # normalize the data
         scaler = preprocessing.StandardScaler()
+        print('standardizing factual dataset')
         self.df[self.continuous_atts] = scaler.fit_transform(self.df[self.continuous_atts])
         if self.cf_df is not None:
+            print('standardizing counterfactual dataset')
             self.cf_df[self.continuous_atts] = scaler.fit_transform(self.cf_df[self.continuous_atts])
 
     def top_k(self, t, tset, k: int, distance: str, max_d: float = None) -> List[Tuple[float, int]]:
@@ -146,7 +148,7 @@ class SituationTesting:
             if return_neighbors:
                 self.res_dict_df_neighbors[int(c)] = {'ctr_idx': nn1, 'tst_idx': nn2}
             if return_counterfactual_fairness:
-                if self.df.loc[c, target_att] == self.cf_df.loc[c, target_att]:
+                if self.df.loc[c, target_att] == self.cf_df.loc[c, target_att]:  # TODO: only for protected ind!
                     self.res_cf[c] = True
                 else:
                     self.res_cf[c] = False
