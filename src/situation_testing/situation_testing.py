@@ -6,9 +6,9 @@ import math
 import pandas as pd
 import numpy as np
 import scipy.stats as st
-# local
-from src.situation_testing._distance_functions import kdd2011dist
-from src.situation_testing._utils import *
+# local functions
+from situation_testing._distance_functions import kdd2011dist
+from situation_testing._utils import *
 
 
 __DISTANCES__ = {'kdd2011': kdd2011dist}
@@ -38,6 +38,7 @@ class SituationTesting:
                        ordinal_atts: List[str] = None):
         self.df = df
         self.cf_df = cf_df
+        # all attribute information
         nominal_atts = [] if nominal_atts is None else nominal_atts
         continuous_atts = [] if continuous_atts is None else continuous_atts
         ordinal_atts = [] if ordinal_atts is None else ordinal_atts
@@ -53,7 +54,6 @@ class SituationTesting:
         self.continuous_atts_pos = [cols.index(c) for c in continuous_atts]
         self.ordinal_atts_pos = [cols.index(c) for c in ordinal_atts]
         self.natts = len(continuous_atts) + len(nominal_atts) + len(ordinal_atts)
-
         # normalize the data
         scaler = preprocessing.StandardScaler()
         self.df[self.continuous_atts] = scaler.fit_transform(self.df[self.continuous_atts])
