@@ -29,7 +29,7 @@ class SituationTesting:
         self.natts = None
         self.include_centers = None
         self.res_dict_df_neighbors = None
-        self.res_cf = None
+        self.res_counterfactual_unfairness = None
         self.wald_ci = None
 
     def setup_baseline(self, df: DataFrame,
@@ -113,7 +113,7 @@ class SituationTesting:
         if return_neighbors:
             self.res_dict_df_neighbors = {}
         if return_counterfactual_fairness and self.cf_df is not None:
-            self.res_cf = pd.Series(np.zeros(len(self.df)), index=self.df.index)  # todo
+            self.res_counterfactual_unfairness = pd.Series(np.zeros(len(self.df)), index=self.df.index)
         else:
             return_counterfactual_fairness = False
 
@@ -177,12 +177,14 @@ class SituationTesting:
             res_st.loc[c] = round(p1 - p2, 3)  # diff
             self._test_discrimination(c, p1, p2, k1, k2, alpha, tau)  # statistical diff
             if return_neighbors:
-                self.res_dict_df_neighbors[int(c)] = {'ctr_idx': nn1, 'tst_idx': nn2}
+                # remove centers (we'll always have c)
+                self.res_dict_df_neighbors[int(c)] = {'ctr_idx': [i for i in nn1 if i != c],
+                                                      'tst_idx': [i for i in nn2 if i != c]}
             if return_counterfactual_fairness:
-                if self.df.loc[c, target_att] == self.cf_df.loc[c, target_att]:  # TODO: only for protected ind!
-                    self.res_cf[c] = True
+                if self.df.loc[c, target_att] != self.cf_df.loc[c, target_att]:
+                    self.res_counterfactual_unfairness[c] = True
                 else:
-                    self.res_cf[c] = False
+                    self.res_counterfactual_unfairness[c] = False
 
         return res_st
 
