@@ -27,6 +27,7 @@ class SituationTesting:
         self.continuous_atts_pos = None
         self.ordinal_atts_pos = None
         self.natts = None
+        self.include_centers = None
         self.res_dict_df_neighbors = None
         self.res_cf = None
         self.wald_ci = None
@@ -101,6 +102,7 @@ class SituationTesting:
             tau: float = 0.0,
             distance: str = 'kdd2011',
             max_d: float = None,
+            include_centers: bool = None,
             return_counterfactual_fairness: bool = True,
             return_neighbors: bool = True):
 
@@ -111,9 +113,12 @@ class SituationTesting:
         if return_neighbors:
             self.res_dict_df_neighbors = {}
         if return_counterfactual_fairness and self.cf_df is not None:
-            self.res_cf = pd.Series(np.zeros(len(self.df)), index=self.df.index)
+            self.res_cf = pd.Series(np.zeros(len(self.df)), index=self.df.index)  # todo
         else:
             return_counterfactual_fairness = False
+
+        # when True, include ctr and tst centers in p1 and p2 calculations
+        self.include_centers = include_centers if include_centers is not None else self.include_centers
 
         # todo: atm, only |A|=1
         # gather info for control (ctr) and test (tst) groups
@@ -136,16 +141,30 @@ class SituationTesting:
             ctr_k = self.top_k(self.df.loc[c, self.relevant_atts], ctr_search, k + 1, distance, max_d)
             if self.cf_df is not None:
                 # cfST: draw test center from counterfactual df
-                tst_k = self.top_k(self.cf_df.loc[c, self.relevant_atts], tst_search, k, distance, max_d)
+                if self.include_centers:
+                    temp_tst_search = tst_search.copy()
+                    temp_tst_search = temp_tst_search.append(self.cf_df.loc[c, self.relevant_atts])
+                    tst_k = self.top_k(self.cf_df.loc[c, self.relevant_atts], temp_tst_search, k + 1, distance, max_d)
+                    del temp_tst_search
+                else:
+                    tst_k = self.top_k(self.cf_df.loc[c, self.relevant_atts], tst_search, k, distance, max_d)
             else:
                 # standard ST: draw test center from factual df
                 tst_k = self.top_k(self.df.loc[c, self.relevant_atts], tst_search, k, distance, max_d)
-            nn1 = [j for _, j in ctr_k if j != c]  # idx for ctr_k (minus center)
-            nn2 = [j for _, j in tst_k]            # idx for tst_k
-            k1 = len(nn1)
-            k2 = len(nn2)
-            p1 = sum(self.df.loc[nn1, target_att] == bad_y_val) / k1
-            p2 = sum(self.df.loc[nn2, target_att] == bad_y_val) / k2
+            if self.cf_df is not None and self.include_centers:  # running cfST and include centers
+                nn1 = [j for _, j in ctr_k]  # idx for ctr_k (minus center)
+                nn2 = [j for _, j in tst_k]
+                k1 = len(nn1)
+                k2 = len(nn2)
+                p1 = sum(self.df.loc[nn1, target_att] == bad_y_val) / k1
+                p2 = sum(self.cf_df.loc[nn2, target_att] == bad_y_val) / k2  # check if this is true for multiple A
+            else:  # for ST, exclude the centers (bcs these are always equal!); optional for cfST (w.r.t. to CF)
+                nn1 = [j for _, j in ctr_k if j != c]  # idx for ctr_k (minus center)
+                nn2 = [j for _, j in tst_k]            # idx for tst_k
+                k1 = len(nn1)
+                k2 = len(nn2)
+                p1 = sum(self.df.loc[nn1, target_att] == bad_y_val) / k1
+                p2 = sum(self.df.loc[nn2, target_att] == bad_y_val) / k2
             # output(s)
             res_st.loc[c] = round(p1 - p2, 3)  # diff
             self._test_discrimination(c, p1, p2, k1, k2, alpha, tau)  # statistical diff
