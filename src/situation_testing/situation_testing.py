@@ -146,19 +146,26 @@ class SituationTesting:
                     temp_tst_search = temp_tst_search.append(self.cf_df.loc[c, self.relevant_atts])
                     tst_k = self.top_k(self.cf_df.loc[c, self.relevant_atts], temp_tst_search, k + 1, distance, max_d)
                     del temp_tst_search
+                    # tst_k = self.top_k(self.cf_df.loc[c, self.relevant_atts], tst_search.append(self.cf_df.loc[c, self.relevant_atts]), k + 1, distance, max_d)
                 else:
                     tst_k = self.top_k(self.cf_df.loc[c, self.relevant_atts], tst_search, k, distance, max_d)
             else:
                 # standard ST: draw test center from factual df
                 tst_k = self.top_k(self.df.loc[c, self.relevant_atts], tst_search, k, distance, max_d)
-            if self.cf_df is not None and self.include_centers:  # running cfST and include centers
-                nn1 = [j for _, j in ctr_k]  # idx for ctr_k (minus center)
+            if self.cf_df is not None and self.include_centers:
+                # running cfST and include centers
+                nn1 = [j for _, j in ctr_k]
                 nn2 = [j for _, j in tst_k]
                 k1 = len(nn1)
                 k2 = len(nn2)
                 p1 = sum(self.df.loc[nn1, target_att] == bad_y_val) / k1
-                p2 = sum(self.cf_df.loc[nn2, target_att] == bad_y_val) / k2  # check if this is true for multiple A
-            else:  # for ST, exclude the centers (bcs these are always equal!); optional for cfST (w.r.t. to CF)
+                p2 = sum(self.cf_df.loc[nn2, target_att] == bad_y_val) / k2
+                # below: in case we need to keep cf_df and tst_center separate for p2 | todo: delete otherwise
+                # nn2 = [j for _, j in tst_k if j != c]
+                # k2 = len(nn2) + 1
+                # sum(self.df.loc[nn2, target_att].append(pd.Series(self.cf_df.loc[c, target_att])) == bad_y_val)
+            else:
+                # for ST always exclude the centers (bcs always equal); optional for cfST (diff from CF)
                 nn1 = [j for _, j in ctr_k if j != c]  # idx for ctr_k (minus center)
                 nn2 = [j for _, j in tst_k]            # idx for tst_k
                 k1 = len(nn1)
