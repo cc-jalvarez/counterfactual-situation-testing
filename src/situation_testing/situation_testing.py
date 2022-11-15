@@ -97,8 +97,12 @@ class SituationTesting:
     #     pass
 
     def run(self, target_att: str, target_val: Dict, sensitive_att: str or List[str], sensitive_val: Dict, k: int,
-            alpha: float = 0.05, tau: float = 0.0, distance: str = 'kdd2011', max_d: float = None,
-            return_counterfactual_fairness: bool = True, return_neighbors: bool = True):
+            alpha: float = 0.05,
+            tau: float = 0.0,
+            distance: str = 'kdd2011',
+            max_d: float = None,
+            return_counterfactual_fairness: bool = True,
+            return_neighbors: bool = True):
 
         # outputs:
         res_st = pd.Series(np.zeros(len(self.df)), index=self.df.index)
@@ -155,15 +159,15 @@ class SituationTesting:
 
         return res_st
 
-    def _test_discrimination(self, ind, p1, p2, k1, k2, alpha, tau):
-        z_score = round(st.norm.ppf(1 - (alpha / 2)), 2)
+    def _test_discrimination(self, ind, p1, p2, k1, k2, alpha, tau, sigfig: int = 3):
+        z_score = round(st.norm.ppf(1 - (alpha / 2)), sigfig)
         d_alpha = z_score * math.sqrt((p1 * (1 - p1) / k1) + (p2 * (1 - p2) / k2))
-        conf_inter = [(p1 - p2) - d_alpha, (p1 - p2) + d_alpha]
-        org_diff = round(p1 - p2, 3)
+        conf_inter = [round((p1 - p2) - d_alpha, sigfig), round((p1 - p2) + d_alpha, sigfig)]
+        org_diff = round(p1 - p2, sigfig)
         if (p1 - p2) >= 0:  # from ST paper #1
-            diff = max(0, p1 - p2 - d_alpha)
+            diff = round(max(0, p1 - p2 - d_alpha), sigfig)
         else:
-            diff = min(0, p1 - p2 + d_alpha)
+            diff = round(min(0, p1 - p2 + d_alpha), sigfig)
         # discrimination evidence:
         if org_diff > tau:
             cf_st = 'Yes'
