@@ -21,6 +21,13 @@ feat_prot = 'Gender'
 feat_prot_vals = {'non_protected': 0, 'protected': 1}
 
 st = SituationTesting()
+
+# st.setup_baseline(df=df,
+#                   nominal_atts=['Gender'], continuous_atts=['AnnualSalary', 'AccountBalance'])
+# org_df['diff'] = st.run(target_att='LoanApproval', target_val={'positive': 1, 'negative': -1},
+#                         sensitive_att='Gender', sensitive_val={'non_protected': 0, 'protected': 1},
+#                         k=15)
+
 st.setup_baseline(df=df,
                   cf_df=cf_df,
                   nominal_atts=['Gender'], continuous_atts=['AnnualSalary', 'AccountBalance'])
@@ -28,6 +35,7 @@ org_df['diff'] = st.run(target_att='LoanApproval', target_val={'positive': 1, 'n
                         sensitive_att='Gender', sensitive_val={'non_protected': 0, 'protected': 1},
                         k=15,
                         include_centers=True)
+
 print(org_df.head(5))
 
 

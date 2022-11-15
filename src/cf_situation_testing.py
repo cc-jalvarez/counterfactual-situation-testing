@@ -11,6 +11,8 @@ from sklearn.neighbors import NearestNeighbors
 from pandas import DataFrame
 from tqdm import tqdm as progress_bar
 
+# TODO: delete file
+
 
 def run_cf_situation_testing(
         df: DataFrame, cf_df: DataFrame, k: int,
@@ -219,3 +221,54 @@ def get_wald_ci(dict_df_neighbors: Dict[int, Dict[str, DataFrame]],
 #
 # EOF
 #
+
+
+if __name__ == "__main__":
+
+    # --- data
+    data_path = r'C:\\Users\\Jose Alvarez\\Documents\\Projects\\CounterfactualSituationTesting\\data\\'
+    resu_path = r'C:\\Users\\Jose Alvarez\\Documents\\Projects\\CounterfactualSituationTesting\\results\\counterfactuals\\'
+    df = pd.read_csv(data_path + 'Karimi2020_v2.csv', sep='|')
+    cf_df = pd.read_csv(resu_path + 'cf_Karimi2020_v2.csv', sep='|')
+
+    # --- cfST parameters:
+    # target feature
+    feat_trgt = 'LoanApproval'
+    # values for the target feature: use 'pos' and 'neg' accordingly
+    feat_trgt_vals = {'pos': 1, 'neg': -1}
+    # list of relevant features
+    feat_rlvt = ['AnnualSalary', 'AccountBalance']
+    # protected feature
+    feat_prot = 'Gender'
+    # values for the protected feature: use 'non_protected' and 'protected' accordingly
+    feat_prot_vals = {'non_protected': 0, 'protected': 1}
+    # size of neiuborhoods
+    n = 15
+    # distance function
+    d = 'manhattan'
+    # weighted k-NN?
+    weights = None  # else, e.g., weights = {'AnnualSalary': 5, 'AccountBalance': 1}
+    # standardize features?
+    standardize = True
+    # significance level (over 100)
+    alpha = 0.05
+    # tau diviation
+    tau = 0.0
+
+    # --- get control and test neighborhoods
+    dict_df_neighbors = get_k_neighbors(df=df, cf_df=cf_df, k=n,
+                                        feat_trgt=feat_trgt, feat_trgt_vals=feat_trgt_vals,
+                                        feat_rlvt=feat_rlvt,
+                                        feat_prot=feat_prot, feat_prot_vals=feat_prot_vals,
+                                        standardize=standardize,
+                                        weights=weights
+                                        )
+    print('done')
+
+    # --- prove discrimination via Wald CIs
+    test_disc = get_wald_ci(dict_df_neighbors=dict_df_neighbors,
+                            feat_trgt=feat_trgt, feat_trgt_vals=feat_trgt_vals,
+                            alpha=alpha,
+                            tau=tau
+                            )
+    print('done')
