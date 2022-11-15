@@ -146,6 +146,7 @@ class SituationTesting:
                     temp_tst_search = temp_tst_search.append(self.cf_df.loc[c, self.relevant_atts])
                     tst_k = self.top_k(self.cf_df.loc[c, self.relevant_atts], temp_tst_search, k + 1, distance, max_d)
                     del temp_tst_search
+                    # below: can create a temporary instance of the appended df | todo: delete otherwise
                     # tst_k = self.top_k(self.cf_df.loc[c, self.relevant_atts], tst_search.append(self.cf_df.loc[c, self.relevant_atts]), k + 1, distance, max_d)
                 else:
                     tst_k = self.top_k(self.cf_df.loc[c, self.relevant_atts], tst_search, k, distance, max_d)
