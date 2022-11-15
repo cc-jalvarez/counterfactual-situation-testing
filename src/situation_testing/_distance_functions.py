@@ -15,6 +15,7 @@ def kdd2011dist(t: Dict, tset: DataFrame, relevant_atts: List[str], atts_types: 
     for c in relevant_atts:
         if c in atts_types['continuous_atts']:
             dist = abs(t[c] - tset[c]) / (max(tset[c]) - min(tset[c]))
+            # dist = abs(t[c] - tset[c]) todo: this one gives the same num. cases for standard ST wrt DD method
             tot += dist
         if c in atts_types['ordinal_atts']:
             n_vals = tset[c].nunique() - 1
