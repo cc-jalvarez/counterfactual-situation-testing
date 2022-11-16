@@ -1,16 +1,17 @@
+import os
 import pandas as pd
 import numpy as np
 from src.situation_testing.situation_testing import SituationTesting
 
-data_path = r'C:\\Users\\Jose Alvarez\\Documents\\Projects\\CounterfactualSituationTesting\\data\\'
-resu_path = r'C:\\Users\\Jose Alvarez\\Documents\\Projects\\CounterfactualSituationTesting\\results\\counterfactuals\\'
-df = pd.read_csv(data_path + 'Karimi2020_v2.csv', sep='|', )
-cf_df = pd.read_csv(resu_path + 'cf_Karimi2020_v2.csv', sep='|', )
-print(df.head(5))
-print(cf_df.head(5))
+proj_path = r'C:\\Users\\Jose Alvarez\\Documents\\Projects\\CounterfactualSituationTesting\\'  # delete later (jupyter)
+data_path = os.path.abspath(os.path.join(proj_path, 'data'))
+resu_path = os.path.abspath(os.path.join(proj_path, 'results', 'counterfactuals'))
 
-org_df = df.copy()
+# --- load data
+df = pd.read_csv(data_path + '\\Karimi2020_v2.csv', sep='|', )
+cf_df = pd.read_csv(resu_path + '\\cf_Karimi2020_v2.csv', sep='|', )
 
+# --- Situation testing params
 feat_trgt = 'LoanApproval'
 feat_trgt_vals = {'positive': 1, 'negative': -1}
 # list of relevant features
@@ -19,6 +20,9 @@ feat_rlvt = ['AnnualSalary', 'AccountBalance']
 feat_prot = 'Gender'
 # values for the protected feature: use 'non_protected' and 'protected' accordingly
 feat_prot_vals = {'non_protected': 0, 'protected': 1}
+
+# todo
+org_df = df.copy()
 
 st = SituationTesting()
 
