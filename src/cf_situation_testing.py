@@ -9,9 +9,8 @@ from typing import List, Dict
 from sklearn import preprocessing
 from sklearn.neighbors import NearestNeighbors
 from pandas import DataFrame
-from tqdm import tqdm as progress_bar
 
-# TODO: delete file
+# TODO: delete/move file
 
 
 def run_cf_situation_testing(
