@@ -6,16 +6,15 @@ import numpy as np
 
 
 def kdd2011dist(t: Dict, tset: DataFrame, relevant_atts: List[str], atts_types: Dict[str, List[str]]) -> Series:
-    # todo: relax the following assumptions
-    # assumes distance estimation for one-to-many tuples
-    # assumes t is in tset
-    # assumes continuous attributes have been normalized
+    # todo: assumes distance estimation for one-to-many tuples
     tot = pd.Series(np.zeros(len(tset)), index=tset.index)
     # use normalized Manhattan distance for continuous and ordinal attributes; use overlap measurement for nominal
     for c in relevant_atts:
         if c in atts_types['continuous_atts']:
-            dist = abs(t[c] - tset[c]) / (max(tset[c]) - min(tset[c]))
-            # dist = abs(t[c] - tset[c]) todo: this one gives the same num. cases for standard ST wrt DD method
+            if atts_types['normalize']:
+                dist = abs(t[c] - tset[c])  # cont. vars. are normalized
+            else:
+                dist = abs(t[c] - tset[c]) / (max(tset[c]) - min(tset[c]))  # otherwise: run normalized Manhattan
             tot += dist
         if c in atts_types['ordinal_atts']:
             n_vals = tset[c].nunique() - 1
@@ -35,13 +34,14 @@ def kdd2011dist(t: Dict, tset: DataFrame, relevant_atts: List[str], atts_types: 
     return tot.divide(n_atts)
 
 
-def manhattan(t: Dict, tset: DataFrame, relevant_atts: List[str], atts_types: Dict[str, List[str]]) -> Series:
-    tot = pd.Series(np.zeros(len(tset)), index=tset.index)
-    for c in relevant_atts:
-        dist = abs(t[c] - tset[c]) / (max(tset[c]) - min(tset[c]))
-        tot += dist
-    n_atts = len(atts_types['continuous_atts']) + len(atts_types['ordinal_atts']) + len(atts_types['nominal_atts'])
-    return tot.divide(n_atts)
+# an example | todo: delete later
+# def manhattan(t: Dict, tset: DataFrame, relevant_atts: List[str], atts_types: Dict[str, List[str]]) -> Series:
+#     tot = pd.Series(np.zeros(len(tset)), index=tset.index)
+#     for c in relevant_atts:
+#         dist = abs(t[c] - tset[c]) / (max(tset[c]) - min(tset[c]))
+#         tot += dist
+#     n_atts = len(atts_types['continuous_atts']) + len(atts_types['ordinal_atts']) + len(atts_types['nominal_atts'])
+#     return tot.divide(n_atts)
 
 #
 # EOF

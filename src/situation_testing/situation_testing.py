@@ -26,6 +26,7 @@ class SituationTesting:
         self.nominal_atts_pos = None
         self.continuous_atts_pos = None
         self.ordinal_atts_pos = None
+        self.normalize = None
         self.natts = None
         self.include_centers = None
         self.res_dict_df_neighbors = None
@@ -36,7 +37,8 @@ class SituationTesting:
                        cf_df: DataFrame = None,
                        nominal_atts: List[str] = None,
                        continuous_atts: List[str] = None,
-                       ordinal_atts: List[str] = None):
+                       ordinal_atts: List[str] = None,
+                       normalize: bool = True, ):
         self.df = df
         self.cf_df = cf_df
         # all attribute information
@@ -47,21 +49,24 @@ class SituationTesting:
         self.continuous_atts = continuous_atts
         self.ordinal_atts = ordinal_atts
         self.relevant_atts = self.nominal_atts + self.continuous_atts + self.ordinal_atts
+        self.normalize = normalize
         self.all_atts = {'nominal_atts': self.nominal_atts,
                          'continuous_atts': self.continuous_atts,
-                         'ordinal_atts': self.ordinal_atts}
+                         'ordinal_atts': self.ordinal_atts,
+                         'normalize': self.normalize}
         cols = list(df.columns)
         self.nominal_atts_pos = [cols.index(c) for c in nominal_atts]
         self.continuous_atts_pos = [cols.index(c) for c in continuous_atts]
         self.ordinal_atts_pos = [cols.index(c) for c in ordinal_atts]
         self.natts = len(continuous_atts) + len(nominal_atts) + len(ordinal_atts)
-        # normalize the data
-        scaler = preprocessing.StandardScaler()
-        print('standardizing factual dataset')
-        self.df[self.continuous_atts] = scaler.fit_transform(self.df[self.continuous_atts])
-        if self.cf_df is not None:
-            print('standardizing counterfactual dataset')
-            self.cf_df[self.continuous_atts] = scaler.fit_transform(self.cf_df[self.continuous_atts])
+        # normalize the data if normalize is True
+        if self.normalize:
+            scaler = preprocessing.StandardScaler()
+            print('standardizing factual dataset')
+            self.df[self.continuous_atts] = scaler.fit_transform(self.df[self.continuous_atts])
+            if self.cf_df is not None:
+                print('standardizing counterfactual dataset')
+                self.cf_df[self.continuous_atts] = scaler.fit_transform(self.cf_df[self.continuous_atts])
 
     def top_k(self, t, tset, k: int, distance: str, max_d: float = None) -> List[Tuple[float, int]]:
         """
