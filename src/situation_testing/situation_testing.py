@@ -126,6 +126,7 @@ class SituationTesting:
         self.include_centers = include_centers if include_centers is not None else self.include_centers
 
         # todo: atm, only |A|=1
+        # chnage when cf_df is a list of dfs?
         # gather info for control (ctr) and test (tst) groups
         # if isinstance(sensitive_att, list):
         #     print('multiple/intersectional discrimination')
@@ -159,15 +160,11 @@ class SituationTesting:
             if self.cf_df is not None and self.include_centers:
                 # running cfST and include centers
                 nn1 = [j for _, j in ctr_k]  # todo: store d
-                nn2 = [j for _, j in tst_k]  # todo: store d
+                nn2 = [j for _, j in tst_k]
                 k1 = len(nn1)
                 k2 = len(nn2)
                 p1 = sum(self.df.loc[nn1, target_att] == bad_y_val) / k1
                 p2 = sum(self.cf_df.loc[nn2, target_att] == bad_y_val) / k2
-                # below: in case we need to keep cf_df and tst_center separate for p2 | todo: delete otherwise
-                # nn2 = [j for _, j in tst_k if j != c]
-                # k2 = len(nn2) + 1
-                # sum(self.df.loc[nn2, target_att].append(pd.Series(self.cf_df.loc[c, target_att])) == bad_y_val)
             else:
                 # for ST always exclude the centers (bcs always equal); optional for cfST (diff from CF)
                 nn1 = [j for _, j in ctr_k if j != c]  # idx for ctr_k (minus center)
