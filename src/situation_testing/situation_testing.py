@@ -151,8 +151,6 @@ class SituationTesting:
                     temp_tst_search = temp_tst_search.append(self.cf_df.loc[c, self.relevant_atts])
                     tst_k = self.top_k(self.cf_df.loc[c, self.relevant_atts], temp_tst_search, k + 1, distance, max_d)
                     del temp_tst_search
-                    # below: can create a temporary instance of the appended df | todo: delete otherwise
-                    # tst_k = self.top_k(self.cf_df.loc[c, self.relevant_atts], tst_search.append(self.cf_df.loc[c, self.relevant_atts]), k + 1, distance, max_d)
                 else:
                     tst_k = self.top_k(self.cf_df.loc[c, self.relevant_atts], tst_search, k, distance, max_d)
             else:
@@ -160,8 +158,8 @@ class SituationTesting:
                 tst_k = self.top_k(self.df.loc[c, self.relevant_atts], tst_search, k, distance, max_d)
             if self.cf_df is not None and self.include_centers:
                 # running cfST and include centers
-                nn1 = [j for _, j in ctr_k]
-                nn2 = [j for _, j in tst_k]
+                nn1 = [j for _, j in ctr_k]  # todo: store d
+                nn2 = [j for _, j in tst_k]  # todo: store d
                 k1 = len(nn1)
                 k2 = len(nn2)
                 p1 = sum(self.df.loc[nn1, target_att] == bad_y_val) / k1
