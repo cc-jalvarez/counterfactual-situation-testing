@@ -75,6 +75,7 @@ tau = 0.0
 # del test_df
 
 # For the paper's table:
+n_women = df[df['Gender'] == 1].shape[0]
 
 for new_k in [15, 30, 50, 100]:
     print('===> k={k}'.format(k=new_k))
@@ -88,7 +89,9 @@ for new_k in [15, 30, 50, 100]:
     test_df['ST'] = st.run(target_att='LoanApproval', target_val={'positive': 1, 'negative': -1},
                            sensitive_att='Gender', sensitive_val={'non_protected': 0, 'protected': 1},
                            k=new_k, alpha=alpha, tau=tau)
+
     print(test_df[test_df['ST'] > tau].shape[0])
+    print(test_df[test_df['ST'] > tau].shape[0] / n_women * 100)
 
     del test_df
 
@@ -106,6 +109,7 @@ for new_k in [15, 30, 50, 100]:
                                 k=new_k, alpha=alpha, tau=tau)
 
     print(test_df[test_df['cfST'] > tau].shape[0])
+    print(test_df[test_df['cfST'] > tau].shape[0] / n_women * 100)
 
     del test_df
 
@@ -124,5 +128,6 @@ for new_k in [15, 30, 50, 100]:
                                 k=new_k, alpha=alpha, tau=tau)
 
     print(test_df[test_df['cfST'] > tau].shape[0])
+    print(test_df[test_df['cfST'] > tau].shape[0] / n_women * 100)
 
     del test_df
