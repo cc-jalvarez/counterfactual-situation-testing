@@ -34,12 +34,9 @@ class SituationTesting:
         self.res_counterfactual_unfairness = None
         self.wald_ci = None
 
-    def setup_baseline(self, df: DataFrame,
-                       cf_df: DataFrame = None,
-                       nominal_atts: List[str] = None,
-                       continuous_atts: List[str] = None,
-                       ordinal_atts: List[str] = None,
-                       normalize: bool = True, ):
+    def setup_baseline(self, df: DataFrame, cf_df: DataFrame = None, nominal_atts: List[str] = None,
+                       continuous_atts: List[str] = None, ordinal_atts: List[str] = None, normalize: bool = True):
+        # datasets
         self.df = df
         self.cf_df = cf_df
         # all attribute information
@@ -90,18 +87,13 @@ class SituationTesting:
         q = [(-v, i) for v, i in q]
         return sorted(q)
 
-    # TODO
+    # TODO: based on len(A) -> run single ST or multiple/intersectional ST | ST.run() n times for multiple, eg
     # def get_search_spaces(self, sensitive_att: str or List[str], sensitive_val: Dict):
     #     if isinstance(sensitive_att, list):  # multiple or intersectional disc.
     #         if len(sensitive_att) == len(sensitive_val):
     #             print('multiple disc: consider A_1 + A+2 + ... + A_n')
     #         else:
     #             print('intersectional disc: consider A_1 * A+2 * ... * A_n')
-    #
-    #     else:  # single disc.
-    #         search_me = self.df[self.df[sensitive_att] == get_pro_value(sensitive_val)].copy()
-    #
-    #     pass
 
     def run(self, target_att: str, target_val: Dict, sensitive_att: str or List[str], sensitive_val: Dict, k: int,
             alpha: float = 0.05,
@@ -109,31 +101,19 @@ class SituationTesting:
             distance: str = 'kdd2011',
             max_d: float = None,
             include_centers: bool = None,
-            return_counterfactual_fairness: bool = True,
-            return_neighbors: bool = True):
+            return_counterfactual_fairness: bool = True):
 
+        # when True, include ctr and tst centers in p1 and p2 calculations
+        self.include_centers = include_centers if include_centers is not None else self.include_centers
         # outputs:
         res_st = pd.Series(np.zeros(len(self.df)), index=self.df.index)
         self.wald_ci = []
-        # other outputs:
         self.res_dict_df_neighbors = {}
         self.res_dict_dist_to_neighbors = {}
         if return_counterfactual_fairness and self.cf_df is not None:
             self.res_counterfactual_unfairness = pd.Series(np.zeros(len(self.df)), index=self.df.index)
         else:
             return_counterfactual_fairness = False
-
-        # when True, include ctr and tst centers in p1 and p2 calculations
-        self.include_centers = include_centers if include_centers is not None else self.include_centers
-
-        # todo: atm, only |A|=1
-        # chnage when cf_df is a list of dfs?
-        # gather info for control (ctr) and test (tst) groups
-        # if isinstance(sensitive_att, list):
-        #     print('multiple/intersectional discrimination')
-        # else:
-        # todo: turn it into a list to follow dd loop
-        # sensitive_att = [sensitive_att]
 
         # update relevant attribute list: exclude target and sensitive att(s)
         self.relevant_atts = [att for att in self.relevant_atts if att not in sensitive_att or att == target_att]
