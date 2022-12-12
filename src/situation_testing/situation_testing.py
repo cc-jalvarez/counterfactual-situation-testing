@@ -116,8 +116,8 @@ class SituationTesting:
         res_st = pd.Series(np.zeros(len(self.df)), index=self.df.index)
         self.wald_ci = []
         # other outputs:
-        if return_neighbors:
-            self.res_dict_df_neighbors = {}
+        self.res_dict_df_neighbors = {}
+        self.res_dict_dist_to_neighbors = {}
         if return_counterfactual_fairness and self.cf_df is not None:
             self.res_counterfactual_unfairness = pd.Series(np.zeros(len(self.df)), index=self.df.index)
         else:
@@ -182,8 +182,8 @@ class SituationTesting:
                                                   'tst_idx': [i for i in nn2 if i != c]}
             self.res_dict_dist_to_neighbors[int(c)] = {'ctr_idx': [d[0] for d in ctr_k if d[1] != c],
                                                        'tst_idx': [d[0] for d in tst_k if d[1] != c]}
-            if self.cf_df is not None:
-            # if return_counterfactual_fairness:
+            # counterfactual fairness info:
+            if return_counterfactual_fairness:
                 if self.df.loc[c, target_att] != self.cf_df.loc[c, target_att]:
                     self.res_counterfactual_unfairness[c] = True
                 else:
