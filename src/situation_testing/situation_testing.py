@@ -30,6 +30,7 @@ class SituationTesting:
         self.natts = None
         self.include_centers = None
         self.res_dict_df_neighbors = None
+        self.res_dict_dist_to_neighbors = None
         self.res_counterfactual_unfairness = None
         self.wald_ci = None
 
@@ -159,12 +160,12 @@ class SituationTesting:
                 tst_k = self.top_k(self.df.loc[c, self.relevant_atts], tst_search, k, distance, max_d)
             if self.cf_df is not None and self.include_centers:
                 # running cfST and include centers
-                nn1 = [j for _, j in ctr_k]  # todo: store d and include it in summary stats
+                nn1 = [j for _, j in ctr_k]
                 nn2 = [j for _, j in tst_k]
                 k1 = len(nn1)
                 k2 = len(nn2)
-                p1 = sum(self.df.loc[nn1, target_att] == bad_y_val) / k1
-                p2 = sum(self.cf_df.loc[nn2, target_att] == bad_y_val) / k2
+                p1 = sum(self.df.loc[nn1, target_att] == bad_y_val) / k1     # control
+                p2 = sum(self.cf_df.loc[nn2, target_att] == bad_y_val) / k2  # test
             else:
                 # for ST always exclude the centers (bcs always equal); optional for cfST (diff from CF)
                 nn1 = [j for _, j in ctr_k if j != c]  # idx for ctr_k (minus center)
@@ -176,11 +177,13 @@ class SituationTesting:
             # output(s)
             res_st.loc[c] = round(p1 - p2, 3)  # diff
             self._test_discrimination(c, p1, p2, k1, k2, alpha, tau)  # statistical diff
-            if return_neighbors:
-                # remove centers (we'll always have c)
-                self.res_dict_df_neighbors[int(c)] = {'ctr_idx': [i for i in nn1 if i != c],
-                                                      'tst_idx': [i for i in nn2 if i != c]}
-            if return_counterfactual_fairness:
+            # return neighbors info:
+            self.res_dict_df_neighbors[int(c)] = {'ctr_idx': [i for i in nn1 if i != c],
+                                                  'tst_idx': [i for i in nn2 if i != c]}
+            self.res_dict_dist_to_neighbors[int(c)] = {'ctr_idx': [d[0] for d in ctr_k if d[1] != c],
+                                                       'tst_idx': [d[0] for d in tst_k if d[1] != c]}
+            if self.cf_df is not None:
+            # if return_counterfactual_fairness:
                 if self.df.loc[c, target_att] != self.cf_df.loc[c, target_att]:
                     self.res_counterfactual_unfairness[c] = True
                 else:
