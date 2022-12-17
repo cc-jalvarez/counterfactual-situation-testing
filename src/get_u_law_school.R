@@ -52,20 +52,13 @@ vars_m <- append(vars_m, sense_cols)
 table(df$sex)
 table(df$race_nonwhite)
 
-# # opt 1: take male and white as benchmark
-# sense_cols <- c("female", "nonwhite")
-# opt 2: take all
-#sense_cols <- c("female", "male", "white", "nonwhite") todo: clean up
-
-
-
-#-- temp: test on a sample
-trainIndex <- createDataPartition(df$sex, p = .5, list = FALSE, times = 1)
-df <- df[trainIndex, ]
-
-table(df$sex)
-table(df$race_nonwhite)
-#---
+# #-- test on a sample
+# trainIndex <- createDataPartition(df$sex, p = .5, list = FALSE, times = 1)
+# df <- df[trainIndex, ]
+# 
+# table(df$sex)
+# table(df$race_nonwhite)
+# #---
 
 
 # U Pooled ----------------------------------------------------------------
