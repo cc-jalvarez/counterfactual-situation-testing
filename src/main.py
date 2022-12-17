@@ -3,13 +3,15 @@ import pandas as pd
 import numpy as np
 from src.situation_testing.situation_testing import SituationTesting
 
-proj_path = r'C:\\Users\\Jose Alvarez\\Documents\\Projects\\CounterfactualSituationTesting\\'  # delete later (jupyter)
-data_path = os.path.abspath(os.path.join(proj_path, 'data'))
-resu_path = os.path.abspath(os.path.join(proj_path, 'results', 'counterfactuals'))
+proj_path = r'C:\\Users\\Jose Alvarez\\Documents\\Projects\\CounterfactualSituationTesting\\'
+# factual data
+ft_path = os.path.abspath(os.path.join(proj_path, 'data'))
+# counterfactual data
+cf_path = os.path.abspath(os.path.join(proj_path, 'data', 'counterfactuals'))
 
 # --- load data
-df = pd.read_csv(data_path + '\\Karimi2020_v2.csv', sep='|', )
-cf_df = pd.read_csv(resu_path + '\\cf_Karimi2020_v2.csv', sep='|', )
+df = pd.read_csv(ft_path + '\\LoanApplication_v2.csv', sep='|', )
+cf_df = pd.read_csv(cf_path + '\\cf_LoanApplication_v2.csv', sep='|', )
 
 # --- Situation testing params
 feat_trgt = 'LoanApproval'
