@@ -52,9 +52,9 @@ vars_m <- append(vars_m, sense_cols)
 table(df$sex)
 table(df$race_nonwhite)
 
-#-- test on a sample
-trainIndex <- createDataPartition(df$sex, p = .5, list = FALSE, times = 1)
-df <- df[trainIndex, ]
+# #-- test on a sample
+# trainIndex <- createDataPartition(df$sex, p = .5, list = FALSE, times = 1)
+# df <- df[trainIndex, ]
 
 table(df$sex)
 table(df$race_nonwhite)
@@ -68,20 +68,32 @@ law_school_train <- list(N = nrow(df), K = length(sense_cols),
                          lsat = df[ , c("LSAT")])
 
 # Run the MCMC
-fit_law_school_train_pooled <- stan(file = paste(path_mdls, 'law_school_train.stan', sep=""),
-                                    data = law_school_train,
-                                    iter = 2000,
-                                    chains = 1,
-                                    verbose = TRUE)
+fit_law_school_train <- stan(file = paste(path_mdls, 'law_school_train.stan', sep=""),
+                             data = law_school_train,iter = 2000,
+                             chains = 1,
+                             verbose = TRUE)
 
+# Extract the information
+la_law_school_train <- extract(fit_law_school_train, permuted=TRUE)
 
+# Get (hyper)parameters
+U          <- colMeans(la_law_school_train$u)
+ugpa0      <- mean(la_law_school_train$ugpa0)
+eta_u_ugpa <- mean(la_law_school_train$eta_u_ugpa)
+eta_a_ugpa <- colMeans(la_law_school_train$eta_a_ugpa)
+lsat0      <- mean(la_law_school_train$lsat0)
+eta_u_lsat <- mean(la_law_school_train$eta_u_lsat)
+eta_a_lsat <- colMeans(la_law_school_train$eta_a_lsat)
+SIGMA_G    <- mean(la_law_school_train$sigma_g)
 
-
+# save all
+# get scf here (no need for a python script...)
 
 # Abduction step via residuals --------------------------------------------
 
 
-
+# use same specification as above but estimate residuals via LM
+# in level 3, u seems to be a common var (include it in the regression)
 
 
 
