@@ -105,13 +105,26 @@ df_lev3_do_male$Sex <- df_lev3$sex
 df_lev3_do_male$Race <- df_lev3$race_nonwhite
 df_lev3_do_male$resid_LSAT <- df_lev3$resid_LSAT
 df_lev3_do_male$resid_UGPA <- df_lev3$resid_UGPA
+
 df_lev3_do_male$scf_LSAT <- round(predict(model_lsat, newdata=df_lev3_do_male) 
                                   + df_lev3_do_male$resid_LSAT, 3)
 df_lev3_do_male$scf_UGPA <- round(predict(model_ugpa, newdata=df_lev3_do_male) 
                                   + df_lev3_do_male$resid_UGPA, 3)
 
 summary(df_lev3_do_male$scf_LSAT) # btw 10 - 48
-summary(df_lev3_do_male$scf_UGPA) # btw 120 - 180
+summary(df_lev3_do_male$scf_UGPA) # btw 0 - 4
+
+df_lev3_do_male$scf_LSAT <- 
+  ifelse(df_lev3_do_male$scf_LSAT > 48.00, 48.00, df_lev3_do_male$scf_LSAT)
+df_lev3_do_male$scf_LSAT <- 
+  ifelse(df_lev3_do_male$scf_LSAT < 10.00, 10.00, df_lev3_do_male$scf_LSAT)
+summary(df_lev3_do_male$scf_LSAT)
+
+df_lev3_do_male$scf_UGPA <- 
+  ifelse(df_lev3_do_male$scf_UGPA > 4.00, 4.00, df_lev3_do_male$scf_UGPA)
+df_lev3_do_male$scf_UGPA <- 
+  ifelse(df_lev3_do_male$scf_UGPA < 0.00, 0.00, df_lev3_do_male$scf_UGPA)
+summary(df_lev3_do_male$scf_UGPA)
 
 write.table(df_lev3_do_male, 
             file = paste(path_rslt, "cf_LawSchool_lev3_doMale.csv", sep = ""), 
@@ -122,6 +135,7 @@ df_lev3_do_white$Sex <- df_lev3$sex
 df_lev3_do_white$Race <- df_lev3$race_nonwhite
 df_lev3_do_white$resid_LSAT <- df_lev3$resid_LSAT
 df_lev3_do_white$resid_UGPA <- df_lev3$resid_UGPA
+
 df_lev3_do_white$scf_LSAT <- round(predict(model_lsat, newdata=df_lev3_do_white) 
                                    + df_lev3_do_white$resid_LSAT, 3)
 df_lev3_do_white$scf_UGPA <- round(predict(model_ugpa, newdata=df_lev3_do_white) 
@@ -129,6 +143,18 @@ df_lev3_do_white$scf_UGPA <- round(predict(model_ugpa, newdata=df_lev3_do_white)
 
 summary(df_lev3_do_white$scf_LSAT) # btw 10 - 48
 summary(df_lev3_do_white$scf_UGPA) # btw 120 - 180
+
+df_lev3_do_white$scf_LSAT <- 
+  ifelse(df_lev3_do_white$scf_LSAT > 48.00, 48.00, df_lev3_do_white$scf_LSAT)
+df_lev3_do_white$scf_LSAT <- 
+  ifelse(df_lev3_do_white$scf_LSAT < 10.00, 10.00, df_lev3_do_white$scf_LSAT)
+summary(df_lev3_do_white$scf_LSAT)
+
+df_lev3_do_white$scf_UGPA <- 
+  ifelse(df_lev3_do_white$scf_UGPA > 4.00, 4.00, df_lev3_do_white$scf_UGPA)
+df_lev3_do_white$scf_UGPA <- 
+  ifelse(df_lev3_do_white$scf_UGPA < 0.00, 0.00, df_lev3_do_white$scf_UGPA)
+summary(df_lev3_do_white$scf_UGPA)
 
 write.table(df_lev3_do_white, 
             file = paste(path_rslt, "cf_LawSchool_lev3_doWhite.csv", sep = ""), 
