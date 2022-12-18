@@ -38,11 +38,25 @@ df$LSAT <- round(df$LSAT)
 df$female <- as.numeric(df$sex == "Female")
 df$male <- as.numeric(df$sex == "Male")
 sense_cols <- c("female", "male")
+
 if (use_race == "race_nonwhite"){
   df$white <- as.numeric(df$race_nonwhite == "White")
   sense_cols <- append(sense_cols, "white")
   df$nonwhite <- as.numeric(df$race_nonwhite == "NonWhite")
   sense_cols <- append(sense_cols, "nonwhite")
+}
+
+if (use_race == "race_simpler"){
+  df$white <- as.numeric(df$race_simpler == "White")
+  sense_cols <- append(sense_cols, "white")
+  df$black <- as.numeric(df$race_simpler == "Black")
+  sense_cols <- append(sense_cols, "black")
+  df$Latino <- as.numeric(df$race_simpler == "Latino")
+  sense_cols <- append(sense_cols, "latino")
+  df$asian <- as.numeric(df$race_simpler == "Asian")
+  sense_cols <- append(sense_cols, "asian")
+  df$other <- as.numeric(df$race_simpler == "Other")
+  sense_cols <- append(sense_cols, "Other")
 }
 
 print(sense_cols)
@@ -88,6 +102,8 @@ SIGMA_G    <- mean(la_law_school_train$sigma_g)
 
 # save all
 # get scf here (no need for a python script...)
+
+# write results to counterfactual folfer in data!!!
 
 # Abduction step via residuals --------------------------------------------
 
