@@ -18,10 +18,10 @@ setwd(dir)
 # Set folder paths
 path_data = paste(dir, "data/", sep = "")
 path_mdls = paste(dir, "src/stan_models/", sep = "")
-path_rslt = paste(dir, "results/", sep = "")
+path_rslt = paste(dir, "data/counterfactuals/", sep = "")
 
 # original data
-org_df <- read.csv(file = paste(path_data, "clean_LawData.csv", sep = ""), sep = '|')
+org_df <- read.csv(file = paste(path_data, "clean_LawSchool.csv", sep = ""), sep = '|')
 
 # initial vars
 use_race = "race_nonwhite"
@@ -35,15 +35,19 @@ df <- org_df %>% select(vars)
 
 # var transformation
 df$LSAT <- round(df$LSAT)
+
+sense_cols <- c("female", "male")
+print(sense_cols)
 df$female <- as.numeric(df$sex == "Female")
 df$male <- as.numeric(df$sex == "Male")
-sense_cols <- c("female", "male")
+table(df$sex)
 
 if (use_race == "race_nonwhite"){
   df$white <- as.numeric(df$race_nonwhite == "White")
   sense_cols <- append(sense_cols, "white")
   df$nonwhite <- as.numeric(df$race_nonwhite == "NonWhite")
   sense_cols <- append(sense_cols, "nonwhite")
+  table(df$race_nonwhite)
 }
 
 if (use_race == "race_simpler"){
@@ -57,21 +61,73 @@ if (use_race == "race_simpler"){
   sense_cols <- append(sense_cols, "asian")
   df$other <- as.numeric(df$race_simpler == "Other")
   sense_cols <- append(sense_cols, "Other")
+  table(df$race_simpler)
 }
 
-print(sense_cols)
 vars_m <- append(vars_m, sense_cols)
-
-# The Protected Attributes
-table(df$sex)
-table(df$race_nonwhite)
 
 # #-- test on a sample
 # trainIndex <- createDataPartition(df$sex, p = .5, list = FALSE, times = 1)
 # df <- df[trainIndex, ]
 
-table(df$sex)
-table(df$race_nonwhite)
+# Level 3 -----------------------------------------------------------------
+
+# DAG: Sex -> UGPA; Race -> UGPA; Sex -> LSAT; Race -> LSAT
+df_lev3 <- df
+
+# Step 1: train model for descendant nodes, and 
+model_ugpa <- lm(UGPA ~ 
+                   female + nonwhite + 1, 
+                 data=df_lev3)
+model_lsat <- lm(LSAT ~ 
+                   female + nonwhite + 1, 
+                 data=df_lev3)
+# perform the abduction step: estimate the residuals
+df_lev3$resid_UGPA = df_lev3$UGPA - predict(model_ugpa, newdata=df_lev3)
+hist(df_lev3$resid_UGPA)
+df_lev3$resid_LSAT = df_lev3$LSAT - predict(model_lsat, newdata=df_lev3)
+hist(df_lev3$resid_LSAT)
+
+# Step 2: action on race and gender (accordingly: under multiple disc.)
+# do(Gender:='Male')
+df_lev3_do_male <- data.frame(female=rep(0, nrow(df_lev3)), 
+                              nonwhite=df_lev3$nonwhite)
+# do(Race:='White')
+df_lev3_do_white <- data.frame(female=df_lev3$female, 
+                               nonwhite=rep(0, nrow(df_lev3)))
+# Step 3: prediction
+# do(Gender:='Male')
+df_lev3_do_male$Sex <- df_lev3$sex
+df_lev3_do_male$Race <- df_lev3$race_nonwhite
+df_lev3_do_male$resid_LSAT <- df_lev3$resid_LSAT
+df_lev3_do_male$resid_UGPA <- df_lev3$resid_UGPA
+df_lev3_do_male$scf_LSAT <- round(predict(model_lsat, newdata=df_lev3_do_male) 
+                                  + df_lev3_do_male$resid_LSAT, 3)
+df_lev3_do_male$scf_UGPA <- round(predict(model_ugpa, newdata=df_lev3_do_male) 
+                                  + df_lev3_do_male$resid_UGPA, 3)
+
+summary(df_lev3_do_male$scf_LSAT) # btw 10 - 48
+summary(df_lev3_do_male$scf_UGPA) # btw 120 - 180
+
+write.table(df_lev3_do_male, 
+            file = paste(path_rslt, "cf_LawSchool.csv", sep = ""), 
+            sep = "|")
+
+# do(Race:='White')
+df_lev3_do_white$Sex <- df_lev3$sex
+df_lev3_do_white$Race <- df_lev3$race_nonwhite
+df_lev3_do_white$resid_LSAT <- df_lev3$resid_LSAT
+df_lev3_do_white$resid_UGPA <- df_lev3$resid_UGPA
+df_lev3_do_white$scf_LSAT <- round(predict(model_lsat, newdata=df_lev3_do_white) 
+                                   + df_lev3_do_white$resid_LSAT, 3)
+df_lev3_do_white$scf_UGPA <- round(predict(model_ugpa, newdata=df_lev3_do_white) 
+                                   + df_lev3_do_white$resid_UGPA, 3)
+
+summary(df_lev3_do_white$scf_LSAT) # btw 10 - 48
+summary(df_lev3_do_white$scf_UGPA) # btw 120 - 180
+
+# Level 2 -----------------------------------------------------------------
+
 
 # Abduction step via MCMC -------------------------------------------------
 
