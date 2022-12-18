@@ -67,28 +67,10 @@ cf_df['LoanApproval'] = np.sign(cf_df['AnnualSalary'] + beta_2*cf_df['AccountBal
 cf_df['Gender'] = df['Gender']
 # lose the U's
 cf_df = cf_df[feat_trgt + feat_rlvt + feat_prot]
-
 print(cf_df.head(5))
 
 # store counterfactual data in data/counterfactuals
 cf_df.to_csv(data_path + '\\counterfactuals\\' + 'cf_LoanApplication_v2.csv', sep='|', index=False)
-
-# Paper figures:
-# distributions for paper: X1
-b = 100
-plt.hist(df[df['Gender'] == 1]['AnnualSalary'], bins=b, alpha=0.9, label=r'$X_1^F$')
-plt.hist(cf_df[cf_df['Gender'] == 1]['AnnualSalary'], bins=b, alpha=0.7, label=r'$X_1^{CF}$')
-plt.legend(loc='upper right')
-plt.ylabel('Frequency')
-plt.xlabel(r'Annual salary ($X1$) for females')
-
-# distributions for paper: X2
-b = 100
-plt.hist(df[df['Gender'] == 1]['AccountBalance'], bins=b, alpha=0.9, label=r'$X_2^F$')
-plt.hist(cf_df[cf_df['Gender'] == 1]['AccountBalance'], bins=b, alpha=0.7, label=r'$X_2^{CF}$')
-plt.legend(loc='upper right')
-plt.ylabel('Frequency')
-plt.xlabel(r'Account balance ($X_2$) for females')
 
 #
 # EOF
