@@ -79,12 +79,15 @@ df_lev3 <- df
 model_ugpa <- lm(UGPA ~ 
                    female + nonwhite + 1, 
                  data=df_lev3)
+
 model_lsat <- lm(LSAT ~ 
                    female + nonwhite + 1, 
                  data=df_lev3)
+
 # perform the abduction step: estimate the residuals
 df_lev3$resid_UGPA = df_lev3$UGPA - predict(model_ugpa, newdata=df_lev3)
 hist(df_lev3$resid_UGPA)
+
 df_lev3$resid_LSAT = df_lev3$LSAT - predict(model_lsat, newdata=df_lev3)
 hist(df_lev3$resid_LSAT)
 
@@ -92,6 +95,7 @@ hist(df_lev3$resid_LSAT)
 # do(Gender:='Male')
 df_lev3_do_male <- data.frame(female=rep(0, nrow(df_lev3)), 
                               nonwhite=df_lev3$nonwhite)
+
 # do(Race:='White')
 df_lev3_do_white <- data.frame(female=df_lev3$female, 
                                nonwhite=rep(0, nrow(df_lev3)))
@@ -110,7 +114,7 @@ summary(df_lev3_do_male$scf_LSAT) # btw 10 - 48
 summary(df_lev3_do_male$scf_UGPA) # btw 120 - 180
 
 write.table(df_lev3_do_male, 
-            file = paste(path_rslt, "cf_LawSchool.csv", sep = ""), 
+            file = paste(path_rslt, "cf_LawSchool_lev3_doMale.csv", sep = ""), 
             sep = "|")
 
 # do(Race:='White')
@@ -125,6 +129,10 @@ df_lev3_do_white$scf_UGPA <- round(predict(model_ugpa, newdata=df_lev3_do_white)
 
 summary(df_lev3_do_white$scf_LSAT) # btw 10 - 48
 summary(df_lev3_do_white$scf_UGPA) # btw 120 - 180
+
+write.table(df_lev3_do_white, 
+            file = paste(path_rslt, "cf_LawSchool_lev3_doWhite.csv", sep = ""), 
+            sep = "|")
 
 # Level 2 -----------------------------------------------------------------
 
