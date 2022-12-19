@@ -162,18 +162,26 @@ write.table(df_lev3_do_white,
 
 # Level 2 -----------------------------------------------------------------
 
+# DAG: Sex -> UGPA; Race -> UGPA; Sex -> LSAT; Race -> LSAT; U -> UGPA; U -> LSAT
+df_lev2 <- df
 
+#-- test on a sample
+trainIndex <- createDataPartition(df$sex, p = .5, list = FALSE, times = 1)
+df_lev2 <- df_lev2[trainIndex, ]
+
+# Step 1
 # Abduction step via MCMC -------------------------------------------------
 
 # Prepare data for Stan
-law_school_train <- list(N = nrow(df), K = length(sense_cols),
-                         a = data.matrix(df[ , sense_cols]),
-                         ugpa = df[ , c("UGPA")],
-                         lsat = df[ , c("LSAT")])
+law_school_train <- list(N = nrow(df_lev2), K = length(sense_cols),
+                         a = data.matrix(df_lev2[ , sense_cols]),
+                         ugpa = df_lev2[ , c("UGPA")],
+                         lsat = df_lev2[ , c("LSAT")])
 
 # Run the MCMC
 fit_law_school_train <- stan(file = paste(path_mdls, 'law_school_train.stan', sep=""),
-                             data = law_school_train,iter = 2000,
+                             data = law_school_train,
+                             iter = 2000,
                              chains = 1,
                              verbose = TRUE)
 
@@ -190,16 +198,63 @@ eta_u_lsat <- mean(la_law_school_train$eta_u_lsat)
 eta_a_lsat <- colMeans(la_law_school_train$eta_a_lsat)
 SIGMA_G    <- mean(la_law_school_train$sigma_g)
 
-# save all
-# get scf here (no need for a python script...)
+# store U's
+df_lev2$U <- U
+hist(U)
 
-# write results to counterfactual folfer in data!!!
+# Steps 2 to 3
+# Based on MCMC estimates -------------------------------------------------
 
-# Abduction step via residuals --------------------------------------------
+# do(Gender='Male')
+do_male_lev2_opt1 <- df_lev2[ , c('sex', use_race)]
+do_male_lev2_opt1$U <- U
+
+do_male_lev2_opt1$UGPA <- df_lev2$UGPA
+# predicted UGPA
+do_male_lev2_opt1$pr_UGPA <- 
+  ugpa0 + 
+  eta_u_ugpa*U + 
+  data.matrix(df_lev2[ , sense_cols])%*%eta_a_ugpa
+# cf UPGA
+do_male_lev2_opt1$cf_UGPA <- 
+  ugpa0 + 
+  eta_u_ugpa*U + 
+  data.matrix(data.frame(female=rep(0, nrow(df_lev2)), 
+                         male=rep(1, nrow(df_lev2)), 
+                         white=df_lev2$white, 
+                         nonwhite=df_lev2$nonwhite))%*%eta_a_ugpa
+# deltas (or 'error terms')
+hist(do_male_lev2_opt1$pr_UGPA - do_male_lev2_opt1$UGPA)
+
+do_male_lev2_opt1$LSAT <- df_lev2$LSAT
+# predicted LSAT
+do_male_lev2_opt1$pr_LSAT <- exp(
+  lsat0 +
+  eta_u_lsat*U +
+  data.matrix(df_lev2[ , sense_cols])%*%eta_a_lsat
+  )
+# cf LSAT
+do_male_lev2_opt1$cf_LSAT <- exp(
+  lsat0 +
+  eta_u_lsat*U + 
+  data.matrix(data.frame(female=rep(0, nrow(df_lev2)), 
+                         male=rep(1, nrow(df_lev2)), 
+                         white=df_lev2$white, 
+                         nonwhite=df_lev2$nonwhite))%*%eta_a_lsat
+  )
+# deltas (or 'error terms')
+hist(do_male_lev2_opt1$pr_LSAT - do_male_lev2_opt1$cf_LSAT)
+
+write.table(do_male_lev2_opt1, 
+            file = paste(path_rslt, "cf_LawSchool_lev2_1_doMale.csv", sep = ""), 
+            sep = "|")
 
 
-# use same specification as above but estimate residuals via LM
-# in level 3, u seems to be a common var (include it in the regression)
+
+
+
+
+
 
 
 
