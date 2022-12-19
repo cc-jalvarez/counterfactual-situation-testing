@@ -3,17 +3,17 @@ import pandas as pd
 import numpy as np
 from src.situation_testing.situation_testing import SituationTesting
 
-proj_path = r'C:\\Users\\Jose Alvarez\\Documents\\Projects\\CounterfactualSituationTesting\\'
-# factual data
-ft_path = os.path.abspath(os.path.join(proj_path, 'data'))
-# counterfactual data
-cf_path = os.path.abspath(os.path.join(proj_path, 'data', 'counterfactuals'))
+# working directory: CounterfactualSituationTesting (project) folder
+wd = os.path.dirname(os.path.dirname(__file__))
+# relevant folders
+data_path = os.path.abspath(os.path.join(wd, 'data'))
+resu_path = os.path.abspath(os.path.join(wd, 'results'))
 
 # --- load data
-df = pd.read_csv(ft_path + '\\LoanApplication_v2.csv', sep='|', )
-cf_df = pd.read_csv(cf_path + '\\cf_LoanApplication_v2.csv', sep='|', )
+df = pd.read_csv(data_path + '\\LoanApplication_v2.csv', sep='|')
+cf_df = pd.read_csv(data_path + '\\counterfactuals\\cf_LoanApplication_v2.csv', sep='|')
 
-# --- Situation testing params
+# --- situation testing parameters
 feat_trgt = 'LoanApproval'
 feat_trgt_vals = {'positive': 1, 'negative': -1}
 # list of relevant features
@@ -23,113 +23,89 @@ feat_prot = 'Gender'
 # values for the protected feature: use 'non_protected' and 'protected' accordingly
 feat_prot_vals = {'non_protected': 0, 'protected': 1}
 # k-neighbors
-n = 15
+k_list = [15, 30, 50, 100]
 # significance level
 alpha = 0.05
 # tau deviation
 tau = 0.0
+# for percentages of complainants:
+n_pro = df[df['Gender'] == 1].shape[0]
 
-# # --- ST
-# test_df = df.copy()
-#
-# st = SituationTesting()
-# st.setup_baseline(test_df, nominal_atts=['Gender'], continuous_atts=['AnnualSalary', 'AccountBalance'])
-#
-# test_df['ST'] = st.run(target_att='LoanApproval', target_val={'positive': 1, 'negative': -1},
-#                        sensitive_att='Gender', sensitive_val={'non_protected': 0, 'protected': 1},
-#                        k=n, alpha=alpha, tau=tau)
-# print(test_df[test_df['ST'] > tau].shape[0])
-#
-# del test_df
-#
-# # --- cfST without centers
-# test_df = df.copy()
-# test_cfdf = cf_df.copy()
-#
-# # don't include the centers
-# cf_st = SituationTesting()
-# cf_st.setup_baseline(test_df, test_cfdf, nominal_atts=['Gender'], continuous_atts=['AnnualSalary', 'AccountBalance'])
-#
-# test_df['cfST'] = cf_st.run(target_att='LoanApproval', target_val={'positive': 1, 'negative': -1},
-#                             sensitive_att='Gender', sensitive_val={'non_protected': 0, 'protected': 1},
-#                             include_centers=False,
-#                             k=n, alpha=alpha, tau=tau)
-#
-# print(test_df[test_df['cfST'] > tau].shape[0])
-#
-# del test_df
-#
-# # --- cfST with centers
-# test_df = df.copy()
-# test_cfdf = cf_df.copy()
-#
-# # include the centers
-# cf_st = SituationTesting()
-# cf_st.setup_baseline(test_df, test_cfdf, nominal_atts=['Gender'], continuous_atts=['AnnualSalary', 'AccountBalance'])
-#
-# test_df['cfST'] = cf_st.run(target_att='LoanApproval', target_val={'positive': 1, 'negative': -1},
-#                             sensitive_att='Gender', sensitive_val={'non_protected': 0, 'protected': 1},
-#                             include_centers=True,
-#                             k=n, alpha=alpha, tau=tau)
-#
-# print(test_df[test_df['cfST'] > tau].shape[0])
-#
-# del test_df
+res_k = pd.DataFrame(index=['stST', 'cfST', 'cfST_w', 'CF'])
+dic_res_k = {}
+res_p = pd.DataFrame(index=['stST', 'cfST', 'cfST_w', 'CF'])
+dic_res_p = {}
 
-# For the paper's table:
-n_women = df[df['Gender'] == 1].shape[0]
+for k in k_list:
 
-for new_k in [15, 30, 50, 100]:
-    print('===> k={k}'.format(k=new_k))
+    temp_k = []
+    temp_p = []
 
-    print('standard ST')
+    # Standard Situation Testing
     test_df = df.copy()
-
     st = SituationTesting()
     st.setup_baseline(test_df, nominal_atts=['Gender'], continuous_atts=['AnnualSalary', 'AccountBalance'])
 
-    test_df['ST'] = st.run(target_att='LoanApproval', target_val={'positive': 1, 'negative': -1},
-                           sensitive_att='Gender', sensitive_val={'non_protected': 0, 'protected': 1},
-                           k=new_k, alpha=alpha, tau=tau)
+    test_df['ST'] = st.run(target_att=feat_trgt, target_val=feat_trgt_vals,
+                           sensitive_att=feat_prot, sensitive_val=feat_prot_vals,
+                           k=k, alpha=alpha, tau=tau)
 
-    print(test_df[test_df['ST'] > tau].shape[0])
-    print(test_df[test_df['ST'] > tau].shape[0] / n_women * 100)
-
+    temp_k.append(test_df[test_df['ST'] > tau].shape[0])
+    temp_p.append(round(test_df[test_df['ST'] > tau].shape[0] / n_pro * 100, 2))
     del test_df
 
-    print('counterfactual ST (without centers)')
+    # Counterfactual Situation Testing
     test_df = df.copy()
     test_cfdf = cf_df.copy()
-
     cf_st = SituationTesting()
-    cf_st.setup_baseline(test_df, test_cfdf, nominal_atts=['Gender'],
-                         continuous_atts=['AnnualSalary', 'AccountBalance'])
+    cf_st.setup_baseline(test_df, test_cfdf, nominal_atts=['Gender'], continuous_atts=['AnnualSalary', 'AccountBalance'])
 
-    test_df['cfST'] = cf_st.run(target_att='LoanApproval', target_val={'positive': 1, 'negative': -1},
-                                sensitive_att='Gender', sensitive_val={'non_protected': 0, 'protected': 1},
+    test_df['cfST'] = cf_st.run(target_att=feat_trgt, target_val=feat_trgt_vals,
+                                sensitive_att=feat_prot, sensitive_val=feat_prot_vals,
                                 include_centers=False,
-                                k=new_k, alpha=alpha, tau=tau)
+                                k=k, alpha=alpha, tau=tau)
 
-    print(test_df[test_df['cfST'] > tau].shape[0])
-    print(test_df[test_df['cfST'] > tau].shape[0] / n_women * 100)
-
+    temp_k.append(test_df[test_df['cfST'] > tau].shape[0])
+    temp_p.append(round(test_df[test_df['cfST'] > tau].shape[0] / n_pro * 100, 2))
     del test_df
 
-    print('counterfactual ST (with centers)')
+    # Counterfactual Situation Testing (including ctr and tst centers)
     test_df = df.copy()
     test_cfdf = cf_df.copy()
-
-    # include the centers
     cf_st = SituationTesting()
-    cf_st.setup_baseline(test_df, test_cfdf, nominal_atts=['Gender'],
-                         continuous_atts=['AnnualSalary', 'AccountBalance'])
+    cf_st.setup_baseline(test_df, test_cfdf, nominal_atts=['Gender'], continuous_atts=['AnnualSalary', 'AccountBalance'])
 
-    test_df['cfST'] = cf_st.run(target_att='LoanApproval', target_val={'positive': 1, 'negative': -1},
-                                sensitive_att='Gender', sensitive_val={'non_protected': 0, 'protected': 1},
+    test_df['cfST'] = cf_st.run(target_att=feat_trgt, target_val=feat_trgt_vals,
+                                sensitive_att=feat_prot, sensitive_val=feat_prot_vals,
                                 include_centers=True,
-                                k=new_k, alpha=alpha, tau=tau)
+                                k=k, alpha=alpha, tau=tau)
 
-    print(test_df[test_df['cfST'] > tau].shape[0])
-    print(test_df[test_df['cfST'] > tau].shape[0] / n_women * 100)
+    temp_k.append(test_df[test_df['cfST'] > tau].shape[0])
+    temp_p.append(round(test_df[test_df['cfST'] > tau].shape[0] / n_pro * 100, 2))
 
+    # Counterfactual Fairness
+    test_df['CF'] = cf_st.res_counterfactual_unfairness
+
+    temp_k.append(test_df[test_df['CF'] == True].shape[0])
+    temp_p.append(round(test_df[test_df['CF'] == True].shape[0] / n_pro * 100, 2))
     del test_df
+
+    dic_res_k[k] = temp_k
+    dic_res_p[k] = temp_p
+
+print('DONE')
+
+for k in dic_res_k.keys():
+    res_k[f'k={k}'] = dic_res_k[k]
+print(res_k)
+
+for k in dic_res_p.keys():
+    res_p[f'k={k}'] = dic_res_p[k]
+print(res_p)
+
+res_k.to_csv(resu_path + '\\res_LoanApplication.csv', sep='|', index=True)
+res_p.to_csv(resu_path + '\\res_LoanApplication.csv', sep='|', index=True, mode='a')
+
+#
+# EOF
+#
