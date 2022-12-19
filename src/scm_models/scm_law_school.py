@@ -79,3 +79,66 @@ class LawSchool(SCM):
 #
 # EOF
 #
+
+# # define the DAG
+# dag_law_school = [('U', 'UGPA', ugpa_weights.loc[0, 'eta_u_ugpa']),
+#                   ('U', 'LSAT', lsat_weights.loc[0, 'eta_u_lsat']),
+#                   ('female', 'UGPA', ugpa_weights.loc[0, 'female']),
+#                   ('male', 'UGPA', ugpa_weights.loc[0, 'male']),
+#                   ('white', 'UGPA', ugpa_weights.loc[0, 'white']),
+#                   ('nonwhite', 'UGPA', ugpa_weights.loc[0, 'nonwhite']),
+#                   ('female', 'LSAT', lsat_weights.loc[0, 'female']),
+#                   ('male', 'LSAT', lsat_weights.loc[0, 'male']),
+#                   ('white', 'LSAT', lsat_weights.loc[0, 'white']),
+#                   ('nonwhite', 'LSAT', lsat_weights.loc[0, 'nonwhite'])
+#                  ]
+#
+# # initiate the class LawSchool to get all the SCM methods (maybe too much for this...)
+# law_school = LawSchool(dag_law_school,
+#                        end_vars=['UGPA', 'LSAT'],
+#                        exo_vars=['U'], )
+#
+# # it includes some nice methods
+# print(law_school.nodes)
+# print(law_school.weights)
+# print(law_school.adjacency_mtr)
+# print(law_school.adjacency_lst)
+#
+# law_school.define_sem()
+#
+# # UGPA
+# def pred_ugpa(v_u, v_female, v_male, v_white, v_nonwhite):
+#     return (ugpa_weights.loc[0, 'ugpa0'] +
+#             law_school.adjacency_mtr.loc['U']['UGPA'] * v_u +
+#             law_school.adjacency_mtr.loc['female']['UGPA'] * v_female +
+#             law_school.adjacency_mtr.loc['male']['UGPA'] * v_male +
+#             law_school.adjacency_mtr.loc['white']['UGPA'] * v_white +
+#             law_school.adjacency_mtr.loc['nonwhite']['UGPA'] * v_nonwhite)
+#
+#
+# # LSAT
+# def pred_lsat(v_u, v_female, v_male, v_white, v_nonwhite):
+#     return np.exp(lsat_weights.loc[0, 'lsat0'] +
+#                   law_school.adjacency_mtr.loc['U']['LSAT'] * v_u +
+#                   law_school.adjacency_mtr.loc['female']['LSAT'] * v_female +
+#                   law_school.adjacency_mtr.loc['male']['LSAT'] * v_male +
+#                   law_school.adjacency_mtr.loc['white']['LSAT'] * v_white +
+#                   law_school.adjacency_mtr.loc['nonwhite']['LSAT'] * v_nonwhite)
+#
+# law_school.SEM['UGPA'] = lambda row: pred_ugpa(
+#     v_u=row['U'], v_female=row['female'], v_male=row['male'], v_white=row['white'], v_nonwhite=row['nonwhite'])
+#
+# law_school.SEM['LSAT'] = lambda row: pred_lsat(
+#     v_u=row['U'], v_female=row['female'], v_male=row['male'], v_white=row['white'], v_nonwhite=row['nonwhite'])
+#
+# law_school.define_sem()
+#
+# do_male = law_school.generate_scfs(do={'female': 0, 'male': 1},
+#                                    do_desc='do_male',
+#                                    data=df)
+# do_male.head(5)
+#
+# do_white = law_school.generate_scfs(do={'nonwhite': 0, 'white': 1},
+#                                     do_desc='do_white',
+#                                     data=df)
+# do_white.head(5)
