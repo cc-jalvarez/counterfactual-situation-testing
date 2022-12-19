@@ -67,10 +67,6 @@ if (use_race == "race_simpler"){
 
 vars_m <- append(vars_m, sense_cols)
 
-# #-- test on a sample
-# trainIndex <- createDataPartition(df$sex, p = .5, list = FALSE, times = 1)
-# df <- df[trainIndex, ]
-
 
 # Level 3 -----------------------------------------------------------------
 
@@ -188,6 +184,10 @@ fit_law_school_train <- stan(file = paste(path_mdls, 'law_school_train.stan', se
                              chains = 1,
                              verbose = TRUE)
 
+# Store results (use load())
+save(fit_law_school_train, 
+     file = paste(path_data, "u_fit_law_school_train.Rdata", sep = ""))
+
 # Extract the information
 la_law_school_train <- extract(fit_law_school_train, permuted=TRUE)
 
@@ -219,7 +219,7 @@ do_male_lev2_opt1$pr_UGPA <-
   eta_u_ugpa*U + 
   data.matrix(df_lev2[ , sense_cols])%*%eta_a_ugpa
 # cf UPGA
-do_male_lev2_opt1$cf_UGPA <- 
+do_male_lev2_opt1$scf_UGPA <- 
   ugpa0 + 
   eta_u_ugpa*U + 
   data.matrix(data.frame(female=rep(0, nrow(df_lev2)), 
@@ -234,19 +234,17 @@ do_male_lev2_opt1$LSAT <- df_lev2$LSAT
 do_male_lev2_opt1$pr_LSAT <- exp(
   lsat0 +
   eta_u_lsat*U +
-  data.matrix(df_lev2[ , sense_cols])%*%eta_a_lsat
-  )
+  data.matrix(df_lev2[ , sense_cols])%*%eta_a_lsat)
 # cf LSAT
-do_male_lev2_opt1$cf_LSAT <- exp(
+do_male_lev2_opt1$scf_LSAT <- exp(
   lsat0 +
   eta_u_lsat*U + 
   data.matrix(data.frame(female=rep(0, nrow(df_lev2)), 
                          male=rep(1, nrow(df_lev2)), 
                          white=df_lev2$white, 
-                         nonwhite=df_lev2$nonwhite))%*%eta_a_lsat
-  )
+                         nonwhite=df_lev2$nonwhite))%*%eta_a_lsat)
 # deltas (or 'error terms')
-hist(do_male_lev2_opt1$pr_LSAT - do_male_lev2_opt1$cf_LSAT)
+hist(do_male_lev2_opt1$pr_LSAT - do_male_lev2_opt1$LSAT)
 
 write.table(do_male_lev2_opt1, 
             file = paste(path_rslt, "cf_LawSchool_lev2_1_doMale.csv", sep = ""), 
@@ -263,7 +261,7 @@ do_whites_lev2_opt1$pr_UGPA <-
   eta_u_ugpa*U +
   data.matrix(df_lev2[ , sense_cols])%*%eta_a_ugpa
 # cf UPGA
-do_whites_lev2_opt1$cf_UGPA <- 
+do_whites_lev2_opt1$scf_UGPA <- 
   ugpa0 + 
   eta_u_ugpa*U + 
   data.matrix(data.frame(female=df_lev2$female, 
@@ -278,19 +276,17 @@ do_whites_lev2_opt1$LSAT <- df_lev2$LSAT
 do_whites_lev2_opt1$pr_LSAT <- exp(
   lsat0 +
     eta_u_lsat*U +
-    data.matrix(df_lev2[ , sense_cols])%*%eta_a_lsat
-)
+    data.matrix(df_lev2[ , sense_cols])%*%eta_a_lsat)
 # cf LSAT
-do_whites_lev2_opt1$cf_LSAT <- exp(
+do_whites_lev2_opt1$scf_LSAT <- exp(
   lsat0 +
     eta_u_lsat*U + 
     data.matrix(data.frame(female=df_lev2$female, 
                            male=df_lev2$male, 
                            white=rep(1, nrow(df_lev2)), 
-                           nonwhite=rep(0, nrow(df_lev2))))%*%eta_a_lsat
-)
+                           nonwhite=rep(0, nrow(df_lev2))))%*%eta_a_lsat)
 # deltas (or 'error terms')
-hist(do_whites_lev2_opt1$pr_LSAT - do_whites_lev2_opt1$cf_LSAT)
+hist(do_whites_lev2_opt1$pr_LSAT - do_whites_lev2_opt1$LSAT)
 
 write.table(do_whites_lev2_opt1, 
             file = paste(path_rslt, "cf_LawSchool_lev2_1_doWhite.csv", sep = ""), 
@@ -313,10 +309,12 @@ model_lsat_lev2 <- lm(LSAT ~
                       data=df_lev2)
 
 # perform the abduction step: estimate the residuals
-df_lev2$resid_UGPA = df_lev2$UGPA - predict.glm(model_ugpa_lev2, newdata=df_lev2)
+df_lev2$resid_UGPA = df_lev2$UGPA - 
+  predict.glm(model_ugpa_lev2, newdata=df_lev2)
 hist(df_lev2$resid_UGPA)
 
-df_lev2$resid_LSAT = df_lev2$LSAT - predict.glm(model_lsat_lev2, newdata=df_lev2)
+df_lev2$resid_LSAT = df_lev2$LSAT - 
+  predict.glm(model_lsat_lev2, newdata=df_lev2)
 hist(df_lev2$resid_LSAT)
 
 # Step 2: action on race and gender (accordingly: under multiple disc.)
