@@ -3,5 +3,7 @@
 __pycache__/
 .idea
 .RData
+.rdata
+.Rdata
 .Rhistory
 .rds
