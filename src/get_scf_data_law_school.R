@@ -186,7 +186,7 @@ fit_law_school_train <- stan(file = paste(path_mdls, 'law_school_train.stan', se
 
 # Store results (use load())
 save(fit_law_school_train, 
-     file = paste(path_data, "u_fit_law_school_train.Rdata", sep = ""))
+     file = paste(path_data, "u_fit_law_school_train.RData", sep = ""))
 
 # Extract the information
 la_law_school_train <- extract(fit_law_school_train, permuted=TRUE)
@@ -246,6 +246,21 @@ do_male_lev2_opt1$scf_LSAT <- exp(
 # deltas (or 'error terms')
 hist(do_male_lev2_opt1$pr_LSAT - do_male_lev2_opt1$LSAT)
 
+summary(do_male_lev2_opt1$scf_UGPA)
+summary(do_male_lev2_opt1$scf_LSAT)
+
+do_male_lev2_opt1$scf_LSAT <- 
+  ifelse(do_male_lev2_opt1$scf_LSAT > 48.00, 48.00, do_male_lev2_opt1$scf_LSAT)
+do_male_lev2_opt1$scf_LSAT <- 
+  ifelse(do_male_lev2_opt1$scf_LSAT < 10.00, 10.00, do_male_lev2_opt1$scf_LSAT)
+summary(do_male_lev2_opt1$scf_LSAT)
+
+do_male_lev2_opt1$scf_UGPA <- 
+  ifelse(do_male_lev2_opt1$scf_UGPA > 4.00, 4.00, do_male_lev2_opt1$scf_UGPA)
+do_male_lev2_opt1$scf_UGPA <- 
+  ifelse(do_male_lev2_opt1$scf_UGPA < 0.00, 0.00, do_male_lev2_opt1$scf_UGPA)
+summary(do_male_lev2_opt1$scf_UGPA)
+
 write.table(do_male_lev2_opt1, 
             file = paste(path_rslt, "cf_LawSchool_lev2_1_doMale.csv", sep = ""), 
             sep = "|")
@@ -287,6 +302,21 @@ do_whites_lev2_opt1$scf_LSAT <- exp(
                            nonwhite=rep(0, nrow(df_lev2))))%*%eta_a_lsat)
 # deltas (or 'error terms')
 hist(do_whites_lev2_opt1$pr_LSAT - do_whites_lev2_opt1$LSAT)
+
+summary(do_whites_lev2_opt1$scf_UGPA)
+summary(do_whites_lev2_opt1$scf_LSAT)
+
+do_whites_lev2_opt1$scf_LSAT <- 
+  ifelse(do_whites_lev2_opt1$scf_LSAT > 48.00, 48.00, do_whites_lev2_opt1$scf_LSAT)
+do_whites_lev2_opt1$scf_LSAT <- 
+  ifelse(do_whites_lev2_opt1$scf_LSAT < 10.00, 10.00, do_whites_lev2_opt1$scf_LSAT)
+summary(do_whites_lev2_opt1$scf_LSAT)
+
+do_whites_lev2_opt1$scf_UGPA <- 
+  ifelse(do_whites_lev2_opt1$scf_UGPA > 4.00, 4.00, do_whites_lev2_opt1$scf_UGPA)
+do_whites_lev2_opt1$scf_UGPA <- 
+  ifelse(do_whites_lev2_opt1$scf_UGPA < 0.00, 0.00, do_whites_lev2_opt1$scf_UGPA)
+summary(do_whites_lev2_opt1$scf_UGPA)
 
 write.table(do_whites_lev2_opt1, 
             file = paste(path_rslt, "cf_LawSchool_lev2_1_doWhite.csv", sep = ""), 
