@@ -9,6 +9,7 @@ rstan_options(auto_write = TRUE)
 options(mc.cores = parallel::detectCores())
 library(data.table)
 
+
 # Setup -------------------------------------------------------------------
 
 # Set working directory
@@ -69,6 +70,7 @@ vars_m <- append(vars_m, sense_cols)
 # #-- test on a sample
 # trainIndex <- createDataPartition(df$sex, p = .5, list = FALSE, times = 1)
 # df <- df[trainIndex, ]
+
 
 # Level 3 -----------------------------------------------------------------
 
@@ -160,6 +162,7 @@ write.table(df_lev3_do_white,
             file = paste(path_rslt, "cf_LawSchool_lev3_doWhite.csv", sep = ""), 
             sep = "|")
 
+
 # Level 2 -----------------------------------------------------------------
 
 # DAG: Sex -> UGPA; Race -> UGPA; Sex -> LSAT; Race -> LSAT; U -> UGPA; U -> LSAT
@@ -169,8 +172,8 @@ df_lev2 <- df
 trainIndex <- createDataPartition(df$sex, p = .5, list = FALSE, times = 1)
 df_lev2 <- df_lev2[trainIndex, ]
 
-# Step 1
-# Abduction step via MCMC -------------------------------------------------
+
+# Step 1: Abduction via MCMC ----------------------------------------------
 
 # Prepare data for Stan
 law_school_train <- list(N = nrow(df_lev2), K = length(sense_cols),
@@ -202,8 +205,8 @@ SIGMA_G    <- mean(la_law_school_train$sigma_g)
 df_lev2$U <- U
 hist(U)
 
-# Steps 2 to 3
-# Based on MCMC estimates -------------------------------------------------
+
+# Steps 2 to 3 via MCMC estimates -----------------------------------------
 
 # do(Gender='Male')
 do_male_lev2_opt1 <- df_lev2[ , c('sex', use_race)]
@@ -249,8 +252,51 @@ write.table(do_male_lev2_opt1,
             file = paste(path_rslt, "cf_LawSchool_lev2_1_doMale.csv", sep = ""), 
             sep = "|")
 
+# do(Race:='White')
+do_whites_lev2_opt1 <- df_lev2[ , c('sex', use_race)]
+do_whites_lev2_opt1$U <- U
 
+do_whites_lev2_opt1$UGPA <- df_lev2$UGPA
+# predicted UGPA
+do_whites_lev2_opt1$pr_UGPA <-
+  ugpa0 +
+  eta_u_ugpa*U +
+  data.matrix(df_lev2[ , sense_cols])%*%eta_a_ugpa
+# cf UPGA
+do_whites_lev2_opt1$cf_UGPA <- 
+  ugpa0 + 
+  eta_u_ugpa*U + 
+  data.matrix(data.frame(female=df_lev2$female, 
+                         male=df_lev2$male, 
+                         white=rep(1, nrow(df_lev2)), 
+                         nonwhite=rep(0, nrow(df_lev2))))%*%eta_a_ugpa
+# deltas (or 'error terms')
+hist(do_whites_lev2_opt1$pr_UGPA - do_whites_lev2_opt1$UGPA)
 
+do_whites_lev2_opt1$LSAT <- df_lev2$LSAT
+# predicted LSAT
+do_whites_lev2_opt1$pr_LSAT <- exp(
+  lsat0 +
+    eta_u_lsat*U +
+    data.matrix(df_lev2[ , sense_cols])%*%eta_a_lsat
+)
+# cf LSAT
+do_whites_lev2_opt1$cf_LSAT <- exp(
+  lsat0 +
+    eta_u_lsat*U + 
+    data.matrix(data.frame(female=df_lev2$female, 
+                           male=df_lev2$male, 
+                           white=rep(1, nrow(df_lev2)), 
+                           nonwhite=rep(0, nrow(df_lev2))))%*%eta_a_lsat
+)
+# deltas (or 'error terms')
+hist(do_whites_lev2_opt1$pr_LSAT - do_whites_lev2_opt1$cf_LSAT)
+
+write.table(do_whites_lev2_opt1, 
+            file = paste(path_rslt, "cf_LawSchool_lev2_1_doWhite.csv", sep = ""), 
+            sep = "|")
+
+# Steps 1, 2, 3 given U (opt 2) -------------------------------------------
 
 
 
