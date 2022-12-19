@@ -60,10 +60,8 @@ class SituationTesting:
         # normalize the data if normalize is True
         if self.normalize:
             scaler = preprocessing.StandardScaler()
-            print('standardizing factual dataset')
             self.df[self.continuous_atts] = scaler.fit_transform(self.df[self.continuous_atts])
             if self.cf_df is not None:
-                print('standardizing counterfactual dataset')
                 self.cf_df[self.continuous_atts] = scaler.fit_transform(self.cf_df[self.continuous_atts])
 
     def top_k(self, t, tset, k: int, distance: str, max_d: float = None) -> List[Tuple[float, int]]:
