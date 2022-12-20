@@ -12,14 +12,16 @@ library(data.table)
 
 # Setup -------------------------------------------------------------------
 
-# Set working directory
-dir = "C:/Users/Jose Alvarez/Documents/Projects/CounterfactualSituationTesting/"
+# working directory
+dir = dirname(rstudioapi::getSourceEditorContext()$path)
 setwd(dir)
+setwd('..')
+wd = getwd()
 
-# Set folder paths
-path_data = paste(dir, "data/", sep = "")
-path_mdls = paste(dir, "src/stan_models/", sep = "")
-path_rslt = paste(dir, "data/counterfactuals/", sep = "")
+# folder paths
+path_data = paste(wd, "/data/", sep = "")
+path_mdls = paste(wd, "/src/stan_models/", sep = "")
+path_rslt = paste(wd, "/data/counterfactuals/", sep = "")
 
 # original data
 org_df <- read.csv(file = paste(path_data, "clean_LawSchool.csv", sep = ""), sep = '|')
