@@ -100,6 +100,9 @@ class SituationTesting:
                                                            k, alpha, tau, distance, max_d, include_centers, False)
             return res_mul
 
+    def run_int(self):  # TODO: either expect the intersectional column or create it
+        pass
+
     def run(self, target_att: str, target_val: Dict, sensitive_att: str, sensitive_val: Dict, k: int,
             alpha: float = 0.05,
             tau: float = 0.0,
