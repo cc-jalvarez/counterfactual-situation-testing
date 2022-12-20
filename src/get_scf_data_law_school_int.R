@@ -77,7 +77,7 @@ df_lev3$female_nonwhite <- df_lev3$female*df_lev3$nonwhite
 
 # Option 1: the econometrics form  ----------------------------------------
 
-# Step 1: train model for descendant nodes, and 
+# Train model for descendant nodes 
 model_ugpa_opt1 <- 
   lm(UGPA ~ female + nonwhite + female_nonwhite + 1, data=df_lev3)
 
@@ -86,7 +86,7 @@ model_lsat_opt1 <-
 
 # Option 2: the machine learning form -------------------------------------
 
-# Step 1: train model for descendant nodes, and 
+# Train model for descendant nodes 
 model_ugpa_opt2 <- 
   lm(UGPA ~ female_nonwhite + 1, data=df_lev3)
 
@@ -96,84 +96,87 @@ model_lsat_opt2 <-
 summary(model_ugpa_opt1)
 summary(model_ugpa_opt2)
 
+hist(
+  df_lev3$UGPA - predict.glm(model_ugpa_opt1, newdata=df_lev3)
+)
+summary(
+  df_lev3$UGPA - predict.glm(model_ugpa_opt1, newdata=df_lev3)
+)
+hist(
+  df_lev3$UGPA - predict.glm(model_ugpa_opt2, newdata=df_lev3)
+)
+summary(
+  df_lev3$UGPA - predict.glm(model_ugpa_opt2, newdata=df_lev3)
+)
+
 summary(model_lsat_opt1)
 summary(model_lsat_opt2)
 
+hist(
+  df_lev3$LSAT - predict.glm(model_lsat_opt1, newdata=df_lev3)
+)
+summary(
+  df_lev3$LSAT - predict.glm(model_lsat_opt1, newdata=df_lev3)
+)
+hist(
+  df_lev3$LSAT - predict.glm(model_lsat_opt2, newdata=df_lev3)
+)
+summary(
+  df_lev3$LSAT - predict.glm(model_lsat_opt2, newdata=df_lev3)
+)
 
-# perform the abduction step: estimate the residuals
-df_lev3$resid_UGPA = df_lev3$UGPA - predict.glm(model_ugpa, newdata=df_lev3)
-hist(df_lev3$resid_UGPA)
+# Notes: the main difference between these options is that the coefficients are
+# broken down in opt 1. Since, to be, say, female-nonwhite the individual must
+# also be female and nonwhite (constituent relationship) performing the do
+# on (female-nonwhite, female, nonwhite) vs (female-nonwhite) should have the 
+# same overall effect on UGPA and LSAT. Therefore, we focus on opt 2 for now.
+# Notice that this is further shown by looking at the distribution of the 
+# residuals for each attribute-option.
 
-df_lev3$resid_LSAT = df_lev3$LSAT - predict.glm(model_lsat, newdata=df_lev3)
-hist(df_lev3$resid_LSAT)
+# Step 1: perform the abduction step by estimating the residuals
+df_lev3$resid_UGPA = df_lev3$UGPA - 
+  predict.glm(model_ugpa_opt2, newdata=df_lev3)
+df_lev3$resid_LSAT = df_lev3$LSAT - 
+  predict.glm(model_lsat_opt2, newdata=df_lev3)
 
 # Step 2: action on race and gender (accordingly: under multiple disc.)
-# do(Gender:='Male')
-df_lev3_do_male <- data.frame(female=rep(0, nrow(df_lev3)), 
-                              nonwhite=df_lev3$nonwhite)
+# do(Gender:='Male-White')
+df_lev3_do_male_white <- data.frame(female_nonwhite=rep(0, nrow(df_lev3)))
 
-# do(Race:='White')
-df_lev3_do_white <- data.frame(female=df_lev3$female, 
-                               nonwhite=rep(0, nrow(df_lev3)))
 # Step 3: prediction
-# do(Gender:='Male')
-df_lev3_do_male$Sex <- df_lev3$sex
-df_lev3_do_male$Race <- df_lev3$race_nonwhite
-df_lev3_do_male$resid_LSAT <- df_lev3$resid_LSAT
-df_lev3_do_male$resid_UGPA <- df_lev3$resid_UGPA
+df_lev3_do_male_white$GenderRace <- paste(df_lev3$sex, df_lev3$race_nonwhite, sep='-')
+df_lev3_do_male_white$resid_LSAT <- df_lev3$resid_LSAT
+df_lev3_do_male_white$resid_UGPA <- df_lev3$resid_UGPA
 
-df_lev3_do_male$scf_LSAT <- round(predict(model_lsat, newdata=df_lev3_do_male) 
-                                  + df_lev3_do_male$resid_LSAT, 3)
-df_lev3_do_male$scf_UGPA <- round(predict(model_ugpa, newdata=df_lev3_do_male) 
-                                  + df_lev3_do_male$resid_UGPA, 3)
+df_lev3_do_male_white$scf_LSAT <- 
+  round(
+    predict.glm(model_lsat_opt2, newdata=df_lev3_do_male_white) + 
+      df_lev3_do_male_white$resid_LSAT, 3
+    )
 
-summary(df_lev3_do_male$scf_LSAT) # btw 10 - 48
-summary(df_lev3_do_male$scf_UGPA) # btw 0 - 4
+df_lev3_do_male_white$scf_UGPA <- 
+  round(
+    predict.glm(model_ugpa_opt2, newdata=df_lev3_do_male_white) + 
+      df_lev3_do_male_white$resid_UGPA, 3
+    )
 
-df_lev3_do_male$scf_LSAT <- 
-  ifelse(df_lev3_do_male$scf_LSAT > 48.00, 48.00, df_lev3_do_male$scf_LSAT)
-df_lev3_do_male$scf_LSAT <- 
-  ifelse(df_lev3_do_male$scf_LSAT < 10.00, 10.00, df_lev3_do_male$scf_LSAT)
-summary(df_lev3_do_male$scf_LSAT)
+summary(df_lev3_do_male_white$scf_LSAT) # btw 10 - 48
+summary(df_lev3_do_male_white$scf_UGPA) # btw 0 - 4
 
-df_lev3_do_male$scf_UGPA <- 
-  ifelse(df_lev3_do_male$scf_UGPA > 4.00, 4.00, df_lev3_do_male$scf_UGPA)
-df_lev3_do_male$scf_UGPA <- 
-  ifelse(df_lev3_do_male$scf_UGPA < 0.00, 0.00, df_lev3_do_male$scf_UGPA)
-summary(df_lev3_do_male$scf_UGPA)
+df_lev3_do_male_white$scf_LSAT <- 
+  ifelse(df_lev3_do_male_white$scf_LSAT > 48.00, 48.00, df_lev3_do_male_white$scf_LSAT)
+df_lev3_do_male_white$scf_LSAT <- 
+  ifelse(df_lev3_do_male_white$scf_LSAT < 10.00, 10.00, df_lev3_do_male_white$scf_LSAT)
+summary(df_lev3_do_male_white$scf_LSAT)
 
-write.table(df_lev3_do_male, 
-            file = paste(path_rslt, "cf_LawSchool_lev3_doMale.csv", sep = ""), 
-            sep = "|")
+df_lev3_do_male_white$scf_UGPA <- 
+  ifelse(df_lev3_do_male_white$scf_UGPA > 4.00, 4.00, df_lev3_do_male_white$scf_UGPA)
+df_lev3_do_male_white$scf_UGPA <- 
+  ifelse(df_lev3_do_male_white$scf_UGPA < 0.00, 0.00, df_lev3_do_male_white$scf_UGPA)
+summary(df_lev3_do_male_white$scf_UGPA)
 
-# do(Race:='White')
-df_lev3_do_white$Sex <- df_lev3$sex
-df_lev3_do_white$Race <- df_lev3$race_nonwhite
-df_lev3_do_white$resid_LSAT <- df_lev3$resid_LSAT
-df_lev3_do_white$resid_UGPA <- df_lev3$resid_UGPA
-
-df_lev3_do_white$scf_LSAT <- round(predict(model_lsat, newdata=df_lev3_do_white) 
-                                   + df_lev3_do_white$resid_LSAT, 3)
-df_lev3_do_white$scf_UGPA <- round(predict(model_ugpa, newdata=df_lev3_do_white) 
-                                   + df_lev3_do_white$resid_UGPA, 3)
-
-summary(df_lev3_do_white$scf_LSAT) # btw 10 - 48
-summary(df_lev3_do_white$scf_UGPA) # btw 120 - 180
-
-df_lev3_do_white$scf_LSAT <- 
-  ifelse(df_lev3_do_white$scf_LSAT > 48.00, 48.00, df_lev3_do_white$scf_LSAT)
-df_lev3_do_white$scf_LSAT <- 
-  ifelse(df_lev3_do_white$scf_LSAT < 10.00, 10.00, df_lev3_do_white$scf_LSAT)
-summary(df_lev3_do_white$scf_LSAT)
-
-df_lev3_do_white$scf_UGPA <- 
-  ifelse(df_lev3_do_white$scf_UGPA > 4.00, 4.00, df_lev3_do_white$scf_UGPA)
-df_lev3_do_white$scf_UGPA <- 
-  ifelse(df_lev3_do_white$scf_UGPA < 0.00, 0.00, df_lev3_do_white$scf_UGPA)
-summary(df_lev3_do_white$scf_UGPA)
-
-write.table(df_lev3_do_white, 
-            file = paste(path_rslt, "cf_LawSchool_lev3_doWhite.csv", sep = ""), 
+write.table(df_lev3_do_male_white, 
+            file = paste(path_rslt, "cf_LawSchool_lev3_doMaleWhite.csv", sep = ""), 
             sep = "|")
 
 #

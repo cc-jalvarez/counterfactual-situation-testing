@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from src.situation_testing.situation_testing import SituationTesting
 
-# working directory: CounterfactualSituationTesting (project) folder
+# working directory
 wd = os.path.dirname(os.path.dirname(__file__))
 # relevant folders
 data_path = os.path.abspath(os.path.join(wd, 'data'))
