@@ -85,15 +85,22 @@ class SituationTesting:
         q = [(-v, i) for v, i in q]
         return sorted(q)
 
-    # TODO: based on len(A) -> run single ST or multiple/intersectional ST | ST.run() n times for multiple, eg
-    # def get_search_spaces(self, sensitive_att: str or List[str], sensitive_val: Dict):
-    #     if isinstance(sensitive_att, list):  # multiple or intersectional disc.
-    #         if len(sensitive_att) == len(sensitive_val):
-    #             print('multiple disc: consider A_1 + A+2 + ... + A_n')
-    #         else:
-    #             print('intersectional disc: consider A_1 * A+2 * ... * A_n')
+    def run_mul(self, target_att: str, target_val: Dict, sensitive_att: List[str], sensitive_val: List[Dict],
+                k: int,
+                alpha: float = 0.05,
+                tau: float = 0.0,
+                distance: str = 'kdd2011',
+                max_d: float = None,
+                include_centers: bool = None,
+                return_counterfactual_fairness: bool = True) -> DataFrame:
 
-    def run(self, target_att: str, target_val: Dict, sensitive_att: str or List[str], sensitive_val: Dict, k: int,
+        res_mul = self.df[[sensitive_att]].copy()
+        for a in range(len(sensitive_att)):
+            res_mul['diff_' + sensitive_att[a]] = self.run(target_att, target_val, sensitive_att[a], sensitive_val[a],
+                                                           k, alpha, tau, distance, max_d, include_centers, False)
+            return res_mul
+
+    def run(self, target_att: str, target_val: Dict, sensitive_att: str, sensitive_val: Dict, k: int,
             alpha: float = 0.05,
             tau: float = 0.0,
             distance: str = 'kdd2011',
@@ -198,3 +205,7 @@ class SituationTesting:
 
     def get_test_discrimination(self):
         return pd.DataFrame(self.wald_ci)
+
+#
+# EOF
+#
