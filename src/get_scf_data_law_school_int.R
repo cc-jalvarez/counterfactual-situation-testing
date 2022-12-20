@@ -4,9 +4,6 @@ set.seed(42)
 # Packages
 library(dplyr)
 library(caret)
-# library(rstan)
-# rstan_options(auto_write = TRUE)
-# options(mc.cores = parallel::detectCores())
 library(data.table)
 
 
@@ -30,8 +27,6 @@ org_df <- read.csv(file = paste(path_data, "clean_LawSchool.csv", sep = ""), sep
 use_race = "race_nonwhite"
 vars <- c("LSAT", "UGPA", "sex")
 vars <- append(vars, use_race)
-# # modified vars for scf generation
-# vars_m <- c("LSAT", "UGPA")
 
 # modeling data
 df <- org_df %>% select(vars)

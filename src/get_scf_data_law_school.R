@@ -423,7 +423,6 @@ write.table(df_lev2_do_white,
             file = paste(path_rslt, "cf_LawSchool_lev2_2_doWhite.csv", sep = ""), 
             sep = "|")
 
-
 #
 # EOF
 #
