@@ -302,10 +302,10 @@ res_p_pos.to_csv(resu_path + f'\\res_pos_{do}_LawSchool.csv', sep='|', index=Tru
 res_multiple = dict()
 
 # for stST
-res_multiple['stST'] = pd.merge(left=m_res_df[m_res_df['stST'] > tau], right=w_res_df[w_res_df['stST'] > tau],
+res_multiple['stST'] = pd.merge(left=m_res_df[m_res_df['ST'] > tau], right=w_res_df[w_res_df['ST'] > tau],
                                 how='inner', left_index=True, right_index=True).shape[0]
 # for stST +
-res_multiple['stST (+)'] = pd.merge(left=m_res_df[m_res_df['stST'] < tau], right=w_res_df[w_res_df['stST'] < tau],
+res_multiple['stST (+)'] = pd.merge(left=m_res_df[m_res_df['ST'] < tau], right=w_res_df[w_res_df['ST'] < tau],
                                     how='inner', left_index=True, right_index=True).shape[0]
 # for cfST
 res_multiple['cfST'] = pd.merge(left=m_res_df[m_res_df['cfST'] > tau], right=w_res_df[w_res_df['cfST'] > tau],
@@ -327,6 +327,7 @@ res_multiple['CF (+)'] = pd.merge(left=m_res_df[m_res_df['CF'] == 2], right=w_re
                                   how='inner', left_index=True, right_index=True).shape[0]
 
 print(res_multiple)
+# {'stST': 19, 'stST (+)': 1, 'cfST': 20, 'cfST (+)': 0, 'cfST_w': 20, 'cfST_w (+)': 0, 'CF': 5, 'CF (+)': 0}
 
 ########################################################################################################################
 # Intersectional discrimination: do(Gender:= Female) & do(Race:= White)
