@@ -182,9 +182,6 @@ class SituationTesting:
                         self.res_counterfactual_unfairness[c] = 2
                 else:
                     self.res_counterfactual_unfairness[c] = 0
-                #     self.res_counterfactual_unfairness[c] = True
-                # else:
-                #     self.res_counterfactual_unfairness[c] = False
 
         return res_st
 

@@ -33,6 +33,7 @@ tau = 0.0
 # for percentages of complainants:
 n_pro = df[df['Gender'] == 1].shape[0]
 
+# standard discrimination
 res_k = pd.DataFrame(index=['stST', 'cfST', 'cfST_w', 'CF'])
 dic_res_k = {}
 res_p = pd.DataFrame(index=['stST', 'cfST', 'cfST_w', 'CF'])
