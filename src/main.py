@@ -97,10 +97,10 @@ for k in k_list:
     # Counterfactual Fairness
     test_df['CF'] = cf_st.res_counterfactual_unfairness
 
-    temp_k.append(test_df[test_df['CF'] == True].shape[0])
-    temp_p.append(round(test_df[test_df['CF'] == True].shape[0] / n_pro * 100, 2))
-    temp_k_pos.append(test_df[test_df['CF'] == True].shape[0])
-    temp_p_pos.append(round(test_df[test_df['CF'] == True].shape[0] / n_pro * 100, 2))
+    temp_k.append(test_df[test_df['CF'] == 1].shape[0])
+    temp_p.append(round(test_df[test_df['CF'] == 1].shape[0] / n_pro * 100, 2))
+    temp_k_pos.append(test_df[test_df['CF'] == 2].shape[0])
+    temp_p_pos.append(round(test_df[test_df['CF'] == 2].shape[0] / n_pro * 100, 2))
     del test_df
 
     dic_res_k[k] = temp_k
