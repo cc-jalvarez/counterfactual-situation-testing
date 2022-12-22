@@ -49,6 +49,8 @@ cf_df['Y'] = np.where(cf_df['Score'] >= min_score, 1, 0)
 # store do:=Male results
 m_res_df = df[['Gender', 'Race', 'Y']].copy()
 m_res_df['cf_Y'] = cf_df[['Y']].copy()
+# store for all k
+k_m_res = []
 
 # --- attribute-specific params
 feat_trgt = 'Y'
@@ -141,9 +143,9 @@ for k in k_list:
     dic_res_k_pos[k] = temp_k_pos
     dic_res_p_pos[k] = temp_p_pos
 
-print('DONE')
+    k_m_res.append(m_res_df)
 
-print(m_res_df.head(5))
+print('DONE')
 
 for k in dic_res_k.keys():
     res_k[f'k={k}'] = dic_res_k[k]
@@ -184,7 +186,8 @@ cf_df['Y'] = np.where(cf_df['Score'] >= min_score, 1, 0)
 # store do:=White results
 w_res_df = df[['Gender', 'Race', 'Y']].copy()
 w_res_df['cf_Y'] = cf_df[['Y']].copy()
-w_res_df.head(5)
+# store for all k
+k_w_res = []
 
 # attribute-specific params
 feat_trgt = 'Y'
@@ -265,9 +268,9 @@ for k in k_list:
     dic_res_k_pos[k] = temp_k_pos
     dic_res_p_pos[k] = temp_p_pos
 
-print('DONE')
+    k_w_res.append(w_res_df)
 
-print(w_res_df.head(5))
+print('DONE')
 
 for k in dic_res_k.keys():
     res_k[f'k={k}'] = dic_res_k[k]
@@ -295,6 +298,7 @@ res_p_pos.to_csv(resu_path + f'\\res_pos_{do}_LawSchool.csv', sep='|', index=Tru
 # Multiple discrimination: do(Gender:= Female) + do(Race:= White)
 ########################################################################################################################
 
+# can run for each k... use the lists k_m_res and k_w_res | below looks at latest runs (highest k)
 res_multiple = dict()
 
 # for stST
@@ -328,4 +332,134 @@ print(res_multiple)
 # Intersectional discrimination: do(Gender:= Female) & do(Race:= White)
 ########################################################################################################################
 
+do = 'MaleWhite'
+org_cf_df = \
+    pd.read_csv(data_path + '\\counterfactuals\\' + f'cf_LawSchool_lev3_do{do}.csv', sep='|').reset_index(drop=True)
 
+cf_df = org_cf_df[['GenderRace', 'scf_LSAT', 'scf_UGPA']].copy()
+cf_df = cf_df.rename(columns={'scf_LSAT': 'LSAT', 'scf_UGPA': 'UGPA'})
+
+# add the decision maker
+cf_df['Score'] = b1*cf_df['UGPA'] + b2*cf_df['LSAT']
+cf_df['Y'] = np.where(cf_df['Score'] >= min_score, 1, 0)
+
+# add the intersectional var to df
+df['GenderRace'] = df['Gender'] + '-' + df['Race']
+
+# store do:=White results
+int_res_df = df[['Gender', 'Race', 'Y']].copy()
+int_res_df['cf_Y'] = cf_df[['Y']].copy()
+# store for all k
+k_int_res = []
+
+# attribute-specific params
+feat_trgt = 'Y'
+feat_trgt_vals = {'positive': 1, 'negative': 0}
+# list of relevant features
+feat_rlvt = ['LSAT', 'UGPA']
+# protected feature
+feat_prot = 'GenderRace'
+# values for the protected feature: use 'non_protected' and 'protected' accordingly
+feat_prot_vals = {
+    'non_protected': ['Female-White', 'Male-NonWhite', 'Male-NonWhite', 'Male-White'],
+    'protected': 'Female-NonWhite'
+                 }
+
+# for percentages of complainants:
+n_pro = df[df['GenderRace'] == 'Female-NonWhite'].shape[0]
+
+# run experiments
+for k in k_list:
+
+    temp_k = []
+    temp_p = []
+    temp_k_pos = []
+    temp_p_pos = []
+
+    # Standard Situation Testing
+    test_df = df.copy()
+    st = SituationTesting()
+
+    st.setup_baseline(test_df, nominal_atts=['Gender'], continuous_atts=['LSAT', 'UGPA'])
+    int_res_df['ST'] = st.run(target_att=feat_trgt, target_val=feat_trgt_vals,
+                              sensitive_att=feat_prot, sensitive_val=feat_prot_vals,
+                              k=k, alpha=alpha, tau=tau)
+
+    temp_k.append(int_res_df[int_res_df['ST'] > tau].shape[0])
+    temp_p.append(round(int_res_df[int_res_df['ST'] > tau].shape[0] / n_pro * 100, 2))
+    temp_k_pos.append(int_res_df[int_res_df['ST'] < tau].shape[0])
+    temp_p_pos.append(round(int_res_df[int_res_df['ST'] < tau].shape[0] / n_pro * 100, 2))
+
+    # Counterfactual Situation Testing
+    test_df = df.copy()
+    test_cfdf = cf_df.copy()
+    cf_st = SituationTesting()
+
+    cf_st.setup_baseline(test_df, test_cfdf, nominal_atts=['Gender'], continuous_atts=['LSAT', 'UGPA'])
+    int_res_df['cfST'] = cf_st.run(target_att=feat_trgt, target_val=feat_trgt_vals,
+                                   sensitive_att=feat_prot, sensitive_val=feat_prot_vals,
+                                   include_centers=False, k=k, alpha=alpha, tau=tau)
+
+    temp_k.append(int_res_df[int_res_df['cfST'] > tau].shape[0])
+    temp_p.append(round(int_res_df[int_res_df['cfST'] > tau].shape[0] / n_pro * 100, 2))
+    temp_k_pos.append(int_res_df[int_res_df['cfST'] < tau].shape[0])
+    temp_p_pos.append(round(int_res_df[int_res_df['cfST'] < tau].shape[0] / n_pro * 100, 2))
+
+    # Counterfactual Situation Testing (including ctr and tst centers)
+    test_df = df.copy()
+    test_cfdf = cf_df.copy()
+    cf_st = SituationTesting()
+
+    cf_st.setup_baseline(test_df, test_cfdf, nominal_atts=['Gender'], continuous_atts=['LSAT', 'UGPA'])
+    int_res_df['cfST_w'] = cf_st.run(target_att=feat_trgt, target_val=feat_trgt_vals,
+                                     sensitive_att=feat_prot, sensitive_val=feat_prot_vals,
+                                     include_centers=True, k=k, alpha=alpha, tau=tau)
+
+    temp_k.append(int_res_df[int_res_df['cfST_w'] > tau].shape[0])
+    temp_p.append(round(int_res_df[int_res_df['cfST_w'] > tau].shape[0] / n_pro * 100, 2))
+    temp_k_pos.append(int_res_df[int_res_df['cfST_w'] < tau].shape[0])
+    temp_p_pos.append(round(int_res_df[int_res_df['cfST_w'] < tau].shape[0] / n_pro * 100, 2))
+
+    # Counterfactual Fairness
+    int_res_df['CF'] = cf_st.res_counterfactual_unfairness
+
+    temp_k.append(int_res_df[int_res_df['CF'] == 1].shape[0])
+    temp_p.append(round(int_res_df[int_res_df['CF'] == 1].shape[0] / n_pro * 100, 2))
+    temp_k_pos.append(int_res_df[int_res_df['CF'] == 2].shape[0])
+    temp_p_pos.append(round(int_res_df[int_res_df['CF'] == 2].shape[0] / n_pro * 100, 2))
+    del test_df
+
+    dic_res_k[k] = temp_k
+    dic_res_p[k] = temp_p
+    dic_res_k_pos[k] = temp_k_pos
+    dic_res_p_pos[k] = temp_p_pos
+
+    k_int_res.append(int_res_df)
+
+print('DONE')
+
+for k in dic_res_k.keys():
+    res_k[f'k={k}'] = dic_res_k[k]
+print(res_k)
+
+for k in dic_res_p.keys():
+    res_p[f'k={k}'] = dic_res_p[k]
+print(res_p)
+
+res_k.to_csv(resu_path + f'\\res_{do}_LawSchool.csv', sep='|', index=True)
+res_p.to_csv(resu_path + f'\\res_{do}_LawSchool.csv', sep='|', index=True, mode='a')
+
+for k in dic_res_k_pos.keys():
+    res_k_pos[f'k={k}'] = dic_res_k_pos[k]
+print(res_k_pos)
+
+for k in dic_res_p_pos.keys():
+    res_p_pos[f'k={k}'] = dic_res_p_pos[k]
+print(res_p_pos)
+
+res_k_pos.to_csv(resu_path + f'\\res_pos_{do}_LawSchool.csv', sep='|', index=True)
+res_p_pos.to_csv(resu_path + f'\\res_pos_{do}_LawSchool.csv', sep='|', index=True, mode='a')
+
+#
+# EOF
+#
