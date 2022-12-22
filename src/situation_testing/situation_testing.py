@@ -174,9 +174,17 @@ class SituationTesting:
             # counterfactual fairness info:
             if return_counterfactual_fairness:
                 if self.df.loc[c, target_att] != self.cf_df.loc[c, target_att]:
-                    self.res_counterfactual_unfairness[c] = True
+                    # discrimination: neg_y to pos_y
+                    if self.df.loc[c, target_att] == bad_y_val:
+                        self.res_counterfactual_unfairness[c] = 1
+                    # positive discrimination: pos_y to neg_y
+                    if self.df.loc[c, target_att] != bad_y_val:
+                        self.res_counterfactual_unfairness[c] = 2
                 else:
-                    self.res_counterfactual_unfairness[c] = False
+                    self.res_counterfactual_unfairness[c] = 0
+                #     self.res_counterfactual_unfairness[c] = True
+                # else:
+                #     self.res_counterfactual_unfairness[c] = False
 
         return res_st
 
