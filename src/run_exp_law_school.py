@@ -46,10 +46,6 @@ cf_df = cf_df.rename(columns={'Sex': 'Gender', 'scf_LSAT': 'LSAT', 'scf_UGPA': '
 cf_df['Score'] = b1*cf_df['UGPA'] + b2*cf_df['LSAT']
 cf_df['Y'] = np.where(cf_df['Score'] >= min_score, 1, 0)
 
-# # store do:=Male results
-# m_res_df = df[['Gender', 'Race', 'Y']].copy()
-# m_res_df['cf_Y'] = cf_df[['Y']].copy()
-
 # store for all k
 k_m_res = []
 
@@ -187,10 +183,6 @@ cf_df = cf_df.rename(columns={'Sex': 'Gender', 'scf_LSAT': 'LSAT', 'scf_UGPA': '
 # add the decision maker
 cf_df['Score'] = b1*cf_df['UGPA'] + b2*cf_df['LSAT']
 cf_df['Y'] = np.where(cf_df['Score'] >= min_score, 1, 0)
-
-# # store do:=White results
-# w_res_df = df[['Gender', 'Race', 'Y']].copy()
-# w_res_df['cf_Y'] = cf_df[['Y']].copy()
 
 # store for all k
 k_w_res = []
@@ -331,7 +323,6 @@ n_pro = org_df[(org_df['sex'] == 'Female') & (org_df['race_nonwhite'] == 'NonWhi
 
 for df_i in range(len(k_list)):
 
-    print(df_i)
     temp_k = []
     temp_p = []
 
