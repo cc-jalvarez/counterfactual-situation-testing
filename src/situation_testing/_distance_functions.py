@@ -6,7 +6,7 @@ import numpy as np
 
 
 def kdd2011dist(t: Dict, tset: DataFrame, relevant_atts: List[str], atts_types: Dict[str, List[str]]) -> Series:
-    # todo: assumes distance estimation for one-to-many tuples
+    # assumes for now distance estimation for one-to-many tuples
     tot = pd.Series(np.zeros(len(tset)), index=tset.index)
     # use normalized Manhattan distance for continuous and ordinal attributes; use overlap measurement for nominal
     for c in relevant_atts:
