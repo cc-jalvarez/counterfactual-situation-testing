@@ -299,35 +299,105 @@ res_p_pos.to_csv(resu_path + f'\\res_pos_{do}_LawSchool.csv', sep='|', index=Tru
 ########################################################################################################################
 
 # can run for each k... use the lists k_m_res and k_w_res | below looks at latest runs (highest k)
-res_multiple = dict()
+df_res_multiple_k = pd.DataFrame(index=['stST', 'cfST', 'cfST_w', 'CF'])
+df_res_multiple_p = pd.DataFrame(index=['stST', 'cfST', 'cfST_w', 'CF'])
+res_multiple_k = dict()
+res_multiple_p = dict()
 
-# for stST
-res_multiple['stST'] = pd.merge(left=m_res_df[m_res_df['ST'] > tau], right=w_res_df[w_res_df['ST'] > tau],
-                                how='inner', left_index=True, right_index=True).shape[0]
-# for stST +
-res_multiple['stST (+)'] = pd.merge(left=m_res_df[m_res_df['ST'] < tau], right=w_res_df[w_res_df['ST'] < tau],
-                                    how='inner', left_index=True, right_index=True).shape[0]
-# for cfST
-res_multiple['cfST'] = pd.merge(left=m_res_df[m_res_df['cfST'] > tau], right=w_res_df[w_res_df['cfST'] > tau],
-                                how='inner', left_index=True, right_index=True).shape[0]
-# for cfST +
-res_multiple['cfST (+)'] = pd.merge(left=m_res_df[m_res_df['cfST'] < tau], right=w_res_df[w_res_df['cfST'] < tau],
-                                    how='inner', left_index=True, right_index=True).shape[0]
-# for stST_w
-res_multiple['cfST_w'] = pd.merge(left=m_res_df[m_res_df['cfST_w'] > tau], right=w_res_df[w_res_df['cfST_w'] > tau],
-                                  how='inner', left_index=True, right_index=True).shape[0]
-# for stST_w +
-res_multiple['cfST_w (+)'] = pd.merge(left=m_res_df[m_res_df['cfST_w'] < tau], right=w_res_df[w_res_df['cfST_w'] < tau],
-                                      how='inner', left_index=True, right_index=True).shape[0]
-# for Counterfactual Fairness
-res_multiple['CF'] = pd.merge(left=m_res_df[m_res_df['CF'] == 1], right=w_res_df[w_res_df['CF'] == 1],
-                              how='inner', left_index=True, right_index=True).shape[0]
-# for Counterfactual Fairness w +
-res_multiple['CF (+)'] = pd.merge(left=m_res_df[m_res_df['CF'] == 2], right=w_res_df[w_res_df['CF'] == 2],
-                                  how='inner', left_index=True, right_index=True).shape[0]
+# for percentages of complainants:
+n_pro = org_df[(org_df['sex'] == 'Female') & (org_df['race_nonwhite'] == 'NonWhite')].shape[0]
 
-print(res_multiple)
-# {'stST': 19, 'stST (+)': 1, 'cfST': 20, 'cfST (+)': 0, 'cfST_w': 20, 'cfST_w (+)': 0, 'CF': 5, 'CF (+)': 0}
+for df_i in range(len(k_list)):
+
+    print(df_i)
+    temp_k = []
+    temp_p = []
+
+    # ST
+    temp_k.append(pd.merge(left=k_m_res[df_i][k_m_res[df_i]['ST'] > tau],
+                           right=k_w_res[df_i][k_w_res[df_i]['ST'] > tau],
+                           how='inner', left_index=True, right_index=True).shape[0]
+                  )
+    temp_p.append(round(temp_k[-1]/n_pro, 2))
+
+    # CST (w/o)
+    temp_k.append(pd.merge(left=k_m_res[df_i][k_m_res[df_i]['cfST'] > tau],
+                           right=k_w_res[df_i][k_w_res[df_i]['cfST'] > tau],
+                           how='inner', left_index=True, right_index=True).shape[0]
+                  )
+    temp_p.append(round(temp_k[-1] / n_pro, 2))
+
+    # CST (w)
+    temp_k.append(pd.merge(left=k_m_res[df_i][k_m_res[df_i]['cfST_w'] > tau],
+                           right=k_w_res[df_i][k_w_res[df_i]['cfST_w'] > tau],
+                           how='inner', left_index=True, right_index=True).shape[0]
+                  )
+    temp_p.append(round(temp_k[-1] / n_pro, 2))
+
+    # CF
+    temp_k.append(pd.merge(left=k_m_res[df_i][k_m_res[df_i]['CF'] == 1],
+                           right=k_w_res[df_i][k_w_res[df_i]['CF'] == 1],
+                           how='inner', left_index=True, right_index=True).shape[0]
+                  )
+    temp_p.append(round(temp_k[-1] / n_pro, 2))
+
+    res_multiple_k[k_list[df_i]] = temp_k
+    res_multiple_p[k_list[df_i]] = temp_p
+
+    print('DONE')
+
+for k in res_multiple_k.keys():
+    df_res_multiple_k[f'k={k}'] = res_multiple_k[k]
+print(df_res_multiple_k)
+
+for k in res_multiple_p.keys():
+    df_res_multiple_p[f'k={k}'] = res_multiple_p[k]
+print(df_res_multiple_p)
+
+df_res_multiple_k.to_csv(resu_path + f'\\res_Multiple_LawSchool.csv', sep='|', index=True)
+df_res_multiple_p.to_csv(resu_path + f'\\res_Multiple_LawSchool.csv', sep='|', index=True, mode='a')
+
+# # for stST
+# res_multiple['stST'] = pd.merge(left=m_res_df[m_res_df['ST'] > tau],
+#                                 right=w_res_df[w_res_df['ST'] > tau],
+#                                 how='inner', left_index=True, right_index=True).shape[0]
+# # for stST +
+# # res_multiple['stST (+)'] = pd.merge(left=m_res_df[m_res_df['ST'] < tau],
+# #                                     right=w_res_df[w_res_df['ST'] < tau],
+# #                                     how='inner', left_index=True, right_index=True).shape[0]
+# # for cfST
+# res_multiple['cfST'] = pd.merge(left=m_res_df[m_res_df['cfST'] > tau],
+#                                 right=w_res_df[w_res_df['cfST'] > tau],
+#                                 how='inner', left_index=True, right_index=True).shape[0]
+# # for cfST +
+# # res_multiple['cfST (+)'] = pd.merge(left=m_res_df[m_res_df['cfST'] < tau],
+# #                                     right=w_res_df[w_res_df['cfST'] < tau],
+# #                                     how='inner', left_index=True, right_index=True).shape[0]
+# # for stST_w
+# res_multiple['cfST_w'] = pd.merge(left=m_res_df[m_res_df['cfST_w'] > tau],
+#                                   right=w_res_df[w_res_df['cfST_w'] > tau],
+#                                   how='inner', left_index=True, right_index=True).shape[0]
+# # for stST_w +
+# # res_multiple['cfST_w (+)'] = pd.merge(left=m_res_df[m_res_df['cfST_w'] < tau],
+# #                                       right=w_res_df[w_res_df['cfST_w'] < tau],
+# #                                       how='inner', left_index=True, right_index=True).shape[0]
+# # for Counterfactual Fairness
+# res_multiple['CF'] = pd.merge(left=m_res_df[m_res_df['CF'] == 1],
+#                               right=w_res_df[w_res_df['CF'] == 1],
+#                               how='inner', left_index=True, right_index=True).shape[0]
+# # for Counterfactual Fairness w +
+# # res_multiple['CF (+)'] = pd.merge(left=m_res_df[m_res_df['CF'] == 2],
+# #                                   right=w_res_df[w_res_df['CF'] == 2],
+# #                                   how='inner', left_index=True, right_index=True).shape[0]
+#
+# print(res_multiple)
+#
+# # store results
+# # for k in res_multiple.keys():
+# #     df_res_multiple[f'k={k}'] = res_multiple[k]
+# # print(res_k)
+#
+# # {'stST': 19, 'stST (+)': 1, 'cfST': 20, 'cfST (+)': 0, 'cfST_w': 20, 'cfST_w (+)': 0, 'CF': 5, 'CF (+)': 0}
 
 ########################################################################################################################
 # Intersectional discrimination: do(Gender:= Female) & do(Race:= White)
