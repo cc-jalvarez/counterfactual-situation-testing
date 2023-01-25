@@ -46,9 +46,10 @@ cf_df = cf_df.rename(columns={'Sex': 'Gender', 'scf_LSAT': 'LSAT', 'scf_UGPA': '
 cf_df['Score'] = b1*cf_df['UGPA'] + b2*cf_df['LSAT']
 cf_df['Y'] = np.where(cf_df['Score'] >= min_score, 1, 0)
 
-# store do:=Male results
-m_res_df = df[['Gender', 'Race', 'Y']].copy()
-m_res_df['cf_Y'] = cf_df[['Y']].copy()
+# # store do:=Male results
+# m_res_df = df[['Gender', 'Race', 'Y']].copy()
+# m_res_df['cf_Y'] = cf_df[['Y']].copy()
+
 # store for all k
 k_m_res = []
 
@@ -79,6 +80,10 @@ dic_res_p_pos = {}
 
 # run experiments
 for k in k_list:
+
+    # store do:=Male results
+    m_res_df = df[['Gender', 'Race', 'Y']].copy()
+    m_res_df['cf_Y'] = cf_df[['Y']].copy()
 
     temp_k = []
     temp_p = []
@@ -144,7 +149,7 @@ for k in k_list:
     dic_res_p_pos[k] = temp_p_pos
 
     k_m_res.append(m_res_df)
-
+    del m_res_df
 print('DONE')
 
 for k in dic_res_k.keys():
@@ -183,9 +188,10 @@ cf_df = cf_df.rename(columns={'Sex': 'Gender', 'scf_LSAT': 'LSAT', 'scf_UGPA': '
 cf_df['Score'] = b1*cf_df['UGPA'] + b2*cf_df['LSAT']
 cf_df['Y'] = np.where(cf_df['Score'] >= min_score, 1, 0)
 
-# store do:=White results
-w_res_df = df[['Gender', 'Race', 'Y']].copy()
-w_res_df['cf_Y'] = cf_df[['Y']].copy()
+# # store do:=White results
+# w_res_df = df[['Gender', 'Race', 'Y']].copy()
+# w_res_df['cf_Y'] = cf_df[['Y']].copy()
+
 # store for all k
 k_w_res = []
 
@@ -202,8 +208,24 @@ feat_prot_vals = {'non_protected': 'White', 'protected': 'NonWhite'}
 # for percentages of complainants:
 n_pro = df[df['Race'] == 'NonWhite'].shape[0]
 
+# standard discrimination
+res_k = pd.DataFrame(index=['stST', 'cfST', 'cfST_w', 'CF'])
+dic_res_k = {}
+res_p = pd.DataFrame(index=['stST', 'cfST', 'cfST_w', 'CF'])
+dic_res_p = {}
+
+# positive discrimination
+res_k_pos = pd.DataFrame(index=['stST', 'cfST', 'cfST_w', 'CF'])
+dic_res_k_pos = {}
+res_p_pos = pd.DataFrame(index=['stST', 'cfST', 'cfST_w', 'CF'])
+dic_res_p_pos = {}
+
 # run experiments
 for k in k_list:
+
+    # store do:=White results
+    w_res_df = df[['Gender', 'Race', 'Y']].copy()
+    w_res_df['cf_Y'] = cf_df[['Y']].copy()
 
     temp_k = []
     temp_p = []
@@ -269,7 +291,7 @@ for k in k_list:
     dic_res_p_pos[k] = temp_p_pos
 
     k_w_res.append(w_res_df)
-
+    del w_res_df
 print('DONE')
 
 for k in dic_res_k.keys():
@@ -298,7 +320,7 @@ res_p_pos.to_csv(resu_path + f'\\res_pos_{do}_LawSchool.csv', sep='|', index=Tru
 # Multiple discrimination: do(Gender:= Female) + do(Race:= White)
 ########################################################################################################################
 
-# can run for each k... use the lists k_m_res and k_w_res | below looks at latest runs (highest k)
+# can run for each k... use the lists k_m_res and k_w_res
 df_res_multiple_k = pd.DataFrame(index=['stST', 'cfST', 'cfST_w', 'CF'])
 df_res_multiple_p = pd.DataFrame(index=['stST', 'cfST', 'cfST_w', 'CF'])
 res_multiple_k = dict()
@@ -341,10 +363,13 @@ for df_i in range(len(k_list)):
                   )
     temp_p.append(round(temp_k[-1] / n_pro, 2))
 
+    print(temp_k)
+    print(temp_p)
+
     res_multiple_k[k_list[df_i]] = temp_k
     res_multiple_p[k_list[df_i]] = temp_p
 
-    print('DONE')
+print('DONE')
 
 for k in res_multiple_k.keys():
     df_res_multiple_k[f'k={k}'] = res_multiple_k[k]
@@ -356,48 +381,6 @@ print(df_res_multiple_p)
 
 df_res_multiple_k.to_csv(resu_path + f'\\res_Multiple_LawSchool.csv', sep='|', index=True)
 df_res_multiple_p.to_csv(resu_path + f'\\res_Multiple_LawSchool.csv', sep='|', index=True, mode='a')
-
-# # for stST
-# res_multiple['stST'] = pd.merge(left=m_res_df[m_res_df['ST'] > tau],
-#                                 right=w_res_df[w_res_df['ST'] > tau],
-#                                 how='inner', left_index=True, right_index=True).shape[0]
-# # for stST +
-# # res_multiple['stST (+)'] = pd.merge(left=m_res_df[m_res_df['ST'] < tau],
-# #                                     right=w_res_df[w_res_df['ST'] < tau],
-# #                                     how='inner', left_index=True, right_index=True).shape[0]
-# # for cfST
-# res_multiple['cfST'] = pd.merge(left=m_res_df[m_res_df['cfST'] > tau],
-#                                 right=w_res_df[w_res_df['cfST'] > tau],
-#                                 how='inner', left_index=True, right_index=True).shape[0]
-# # for cfST +
-# # res_multiple['cfST (+)'] = pd.merge(left=m_res_df[m_res_df['cfST'] < tau],
-# #                                     right=w_res_df[w_res_df['cfST'] < tau],
-# #                                     how='inner', left_index=True, right_index=True).shape[0]
-# # for stST_w
-# res_multiple['cfST_w'] = pd.merge(left=m_res_df[m_res_df['cfST_w'] > tau],
-#                                   right=w_res_df[w_res_df['cfST_w'] > tau],
-#                                   how='inner', left_index=True, right_index=True).shape[0]
-# # for stST_w +
-# # res_multiple['cfST_w (+)'] = pd.merge(left=m_res_df[m_res_df['cfST_w'] < tau],
-# #                                       right=w_res_df[w_res_df['cfST_w'] < tau],
-# #                                       how='inner', left_index=True, right_index=True).shape[0]
-# # for Counterfactual Fairness
-# res_multiple['CF'] = pd.merge(left=m_res_df[m_res_df['CF'] == 1],
-#                               right=w_res_df[w_res_df['CF'] == 1],
-#                               how='inner', left_index=True, right_index=True).shape[0]
-# # for Counterfactual Fairness w +
-# # res_multiple['CF (+)'] = pd.merge(left=m_res_df[m_res_df['CF'] == 2],
-# #                                   right=w_res_df[w_res_df['CF'] == 2],
-# #                                   how='inner', left_index=True, right_index=True).shape[0]
-#
-# print(res_multiple)
-#
-# # store results
-# # for k in res_multiple.keys():
-# #     df_res_multiple[f'k={k}'] = res_multiple[k]
-# # print(res_k)
-#
-# # {'stST': 19, 'stST (+)': 1, 'cfST': 20, 'cfST (+)': 0, 'cfST_w': 20, 'cfST_w (+)': 0, 'CF': 5, 'CF (+)': 0}
 
 ########################################################################################################################
 # Intersectional discrimination: do(Gender:= Female) & do(Race:= White)
