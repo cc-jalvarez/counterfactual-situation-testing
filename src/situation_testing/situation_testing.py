@@ -6,8 +6,10 @@ import math
 import pandas as pd
 import numpy as np
 import scipy.stats as st
-from src.situation_testing._distance_functions import kdd2011dist
-from src.situation_testing._utils import *
+# from src.situation_testing._distance_functions import kdd2011dist
+# from src.situation_testing._utils import *
+from situation_testing._distance_functions import kdd2011dist
+from situation_testing._utils import *
 
 
 __DISTANCES__ = {'kdd2011': kdd2011dist}
