@@ -100,10 +100,6 @@ class SituationTesting:
                                                            k, alpha, tau, distance, max_d, include_centers, False)
             return res_mul
 
-    # The current framework can handle it: just provide the intersectional column and its protected value
-    # def run_int(self):
-    #     pass
-
     def run(self, target_att: str, target_val: Dict, sensitive_att: str, sensitive_val: Dict, k: int,
             alpha: float = 0.05,
             tau: float = 0.0,
@@ -186,7 +182,8 @@ class SituationTesting:
         return res_st
 
     def _test_discrimination(self, ind, p1, p2, k1, k2, alpha, tau, sigfig: int = 3):
-        z_score = round(st.norm.ppf(1 - (alpha / 2)), sigfig)
+        z_score = round(st.norm.ppf(1 - alpha), sigfig)
+        # z_score = round(st.norm.ppf(1 - (alpha / 2)), sigfig) two-sided test implementation
         d_alpha = z_score * math.sqrt((p1 * (1 - p1) / k1) + (p2 * (1 - p2) / k2))
         conf_inter = [round((p1 - p2) - d_alpha, sigfig), round((p1 - p2) + d_alpha, sigfig)]
         org_diff = round(p1 - p2, sigfig)
