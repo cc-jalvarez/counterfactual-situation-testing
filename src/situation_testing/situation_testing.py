@@ -6,9 +6,8 @@ import math
 import pandas as pd
 import numpy as np
 import scipy.stats as st
-# local functions
-from situation_testing._distance_functions import kdd2011dist
-from situation_testing._utils import *
+from src.situation_testing._distance_functions import kdd2011dist
+from src.situation_testing._utils import *
 
 
 __DISTANCES__ = {'kdd2011': kdd2011dist}
@@ -93,7 +92,6 @@ class SituationTesting:
                 max_d: float = None,
                 include_centers: bool = None,
                 return_counterfactual_fairness: bool = True) -> DataFrame:
-
         res_mul = self.df[[sensitive_att]].copy()
         for a in range(len(sensitive_att)):
             res_mul['diff_' + sensitive_att[a]] = self.run(target_att, target_val, sensitive_att[a], sensitive_val[a],
@@ -182,8 +180,7 @@ class SituationTesting:
         return res_st
 
     def _test_discrimination(self, ind, p1, p2, k1, k2, alpha, tau, sigfig: int = 3):
-        z_score = round(st.norm.ppf(1 - alpha), sigfig)
-        # z_score = round(st.norm.ppf(1 - (alpha / 2)), sigfig) two-sided test implementation
+        z_score = round(st.norm.ppf(1 - alpha), sigfig)  # bef: st.norm.ppf(1 - (alpha / 2))
         d_alpha = z_score * math.sqrt((p1 * (1 - p1) / k1) + (p2 * (1 - p2) / k2))
         conf_inter = [round((p1 - p2) - d_alpha, sigfig), round((p1 - p2) + d_alpha, sigfig)]
         org_diff = round(p1 - p2, sigfig)
