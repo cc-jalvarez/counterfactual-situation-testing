@@ -29,7 +29,7 @@ k_list = [15, 30, 50, 100]
 # significance level
 alpha = 0.05
 # tau deviation
-tau = 0.05
+tau = 0.0
 
 # for percentages of complainants:
 n_pro = df[df['Gender'] == 1].shape[0]
