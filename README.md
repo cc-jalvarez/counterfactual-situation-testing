@@ -1,6 +1,6 @@
 # counterfactual-situation-testing
 
-Code for the working paper on Counterfactual Situtaion Testing.
+Code for the working paper on Counterfactual Situtaion Testing [[arXiv]](https://arxiv.org/abs/2302.11944).
 
 Datasets, both real and synthetic, are contained within the data/ folder. The scripts get_data_< > (also within the data/ folder) prepare each dataset for the counterfactual situation testing pipeline. The rest of the scripts are within the src/ folder. 
 
