@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 from src.situation_testing.situation_testing import SituationTesting
 
+# This script runs the experiments for Section 4.2
 # working directory
 wd = os.path.dirname(os.path.dirname(__file__))
 # relevant folders
