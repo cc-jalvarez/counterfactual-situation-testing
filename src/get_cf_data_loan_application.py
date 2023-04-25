@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 from sklearn.linear_model import LinearRegression
 
+# This script get the structural counterfactuals (CF) for the loan application data
 # set working directory
 wrk_dir = os.path.dirname(os.getcwd())
 # set data path
