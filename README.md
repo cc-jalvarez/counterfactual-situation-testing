@@ -1,6 +1,6 @@
 # counterfactual-situation-testing
 
-Code for the working paper *Counterfactual Situation Testing: Uncovering Discrimination under Fairness given the Difference* [[arXiv]](https://arxiv.org/abs/2302.11944). 
+Code for the paper *Counterfactual Situation Testing: Uncovering Discrimination under Fairness given the Difference* [[arXiv]](https://arxiv.org/abs/2302.11944). The paper has been accepted to ACM EAAMO 2023.
 
 All datasets are contained within the data/ folder. The scripts get_data_< > (also within the data/ folder) prepare each dataset for the counterfactual situation testing pipeline. The rest of the scripts are within the src/ folder. 
 
