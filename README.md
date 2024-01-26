@@ -1,4 +1,4 @@
-# counterfactual-situation-testing
+# Counterfactual Situation Testing
 
 Code for [Counterfactual Situation Testing: Uncovering Discrimination under Fairness given the Difference](https://dl.acm.org/doi/10.1145/3617694.3623222). *ACM Conference on Equity and Access in Algorithms, Mechanisms, and Optimization (EAAMO)*, pages 1-11, 2023. 
 
