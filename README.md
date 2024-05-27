@@ -8,4 +8,4 @@ The scripts get_cf_data_< > generate the counterfactual dataset for the < > case
 
 The scripts run_exp_< > run the experiments -- standard situation testing, counterfactual situation testing with/without centers, and counterfactual fairness -- for the < > case. 
 
-Finally, the scripts analysis_< > contain the additional analysis (e.g., relevant figures) performed on the < > case. Results fall within the results/ folder. Different runs (in terms of parameters) are stored in specific folders. 
+Finally, the scripts analysis_< > contain the additional analysis (e.g., relevant figures) performed on the < > case. Results fall within the results/ folder. Different runs, parameter-wise, are stored in specific folders. 
