@@ -11,3 +11,10 @@ data_path = wrk_dir + '\\' + 'data' + '\\'
 org_df = pd.read_csv(data_path + '\\' + 'clean_GermanCreditData.csv', sep='|', )
 
 print(org_df.head())
+
+"""
+Consider Fig. 12 from the VACA paper for a loan approval setting... maybe I can come up with my own?
+Consider gender, age, education, loan amount, duration, income and savings
+Create a decision?
+"""
+
