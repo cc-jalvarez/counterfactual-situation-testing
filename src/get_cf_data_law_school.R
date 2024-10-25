@@ -190,7 +190,7 @@ fit_law_school_train <- stan(file = paste(path_mdls, 'law_school_train.stan', se
                              verbose = TRUE)
 
 # Store results (use load())
-save(fit_law_school_train, 
+save(fit_law_school_train,
      file = paste(path_data, "u_fit_law_school_train.RData", sep = ""))
 
 # Extract the information
@@ -219,17 +219,17 @@ do_male_lev2_opt1$U <- U
 
 do_male_lev2_opt1$UGPA <- df_lev2$UGPA
 # predicted UGPA
-do_male_lev2_opt1$pr_UGPA <- 
-  ugpa0 + 
-  eta_u_ugpa*U + 
+do_male_lev2_opt1$pr_UGPA <-
+  ugpa0 +
+  eta_u_ugpa*U +
   data.matrix(df_lev2[ , sense_cols])%*%eta_a_ugpa
 # cf UPGA
-do_male_lev2_opt1$scf_UGPA <- 
-  ugpa0 + 
-  eta_u_ugpa*U + 
-  data.matrix(data.frame(female=rep(0, nrow(df_lev2)), 
-                         male=rep(1, nrow(df_lev2)), 
-                         white=df_lev2$white, 
+do_male_lev2_opt1$scf_UGPA <-
+  ugpa0 +
+  eta_u_ugpa*U +
+  data.matrix(data.frame(female=rep(0, nrow(df_lev2)),
+                         male=rep(1, nrow(df_lev2)),
+                         white=df_lev2$white,
                          nonwhite=df_lev2$nonwhite))%*%eta_a_ugpa
 # deltas (or 'error terms')
 hist(do_male_lev2_opt1$pr_UGPA - do_male_lev2_opt1$UGPA)
@@ -243,10 +243,10 @@ do_male_lev2_opt1$pr_LSAT <- exp(
 # cf LSAT
 do_male_lev2_opt1$scf_LSAT <- exp(
   lsat0 +
-  eta_u_lsat*U + 
-  data.matrix(data.frame(female=rep(0, nrow(df_lev2)), 
-                         male=rep(1, nrow(df_lev2)), 
-                         white=df_lev2$white, 
+  eta_u_lsat*U +
+  data.matrix(data.frame(female=rep(0, nrow(df_lev2)),
+                         male=rep(1, nrow(df_lev2)),
+                         white=df_lev2$white,
                          nonwhite=df_lev2$nonwhite))%*%eta_a_lsat)
 # deltas (or 'error terms')
 hist(do_male_lev2_opt1$pr_LSAT - do_male_lev2_opt1$LSAT)
@@ -254,20 +254,20 @@ hist(do_male_lev2_opt1$pr_LSAT - do_male_lev2_opt1$LSAT)
 summary(do_male_lev2_opt1$scf_UGPA)
 summary(do_male_lev2_opt1$scf_LSAT)
 
-do_male_lev2_opt1$scf_LSAT <- 
+do_male_lev2_opt1$scf_LSAT <-
   ifelse(do_male_lev2_opt1$scf_LSAT > 48.00, 48.00, do_male_lev2_opt1$scf_LSAT)
-do_male_lev2_opt1$scf_LSAT <- 
+do_male_lev2_opt1$scf_LSAT <-
   ifelse(do_male_lev2_opt1$scf_LSAT < 10.00, 10.00, do_male_lev2_opt1$scf_LSAT)
 summary(do_male_lev2_opt1$scf_LSAT)
 
-do_male_lev2_opt1$scf_UGPA <- 
+do_male_lev2_opt1$scf_UGPA <-
   ifelse(do_male_lev2_opt1$scf_UGPA > 4.00, 4.00, do_male_lev2_opt1$scf_UGPA)
-do_male_lev2_opt1$scf_UGPA <- 
+do_male_lev2_opt1$scf_UGPA <-
   ifelse(do_male_lev2_opt1$scf_UGPA < 0.00, 0.00, do_male_lev2_opt1$scf_UGPA)
 summary(do_male_lev2_opt1$scf_UGPA)
 
-write.table(do_male_lev2_opt1, 
-            file = paste(path_rslt, "cf_LawSchool_lev2_1_doMale.csv", sep = ""), 
+write.table(do_male_lev2_opt1,
+            file = paste(path_rslt, "cf_LawSchool_lev2_1_doMale.csv", sep = ""),
             sep = "|")
 
 # do(Race:='White')
@@ -281,12 +281,12 @@ do_whites_lev2_opt1$pr_UGPA <-
   eta_u_ugpa*U +
   data.matrix(df_lev2[ , sense_cols])%*%eta_a_ugpa
 # cf UPGA
-do_whites_lev2_opt1$scf_UGPA <- 
-  ugpa0 + 
-  eta_u_ugpa*U + 
-  data.matrix(data.frame(female=df_lev2$female, 
-                         male=df_lev2$male, 
-                         white=rep(1, nrow(df_lev2)), 
+do_whites_lev2_opt1$scf_UGPA <-
+  ugpa0 +
+  eta_u_ugpa*U +
+  data.matrix(data.frame(female=df_lev2$female,
+                         male=df_lev2$male,
+                         white=rep(1, nrow(df_lev2)),
                          nonwhite=rep(0, nrow(df_lev2))))%*%eta_a_ugpa
 # deltas (or 'error terms')
 hist(do_whites_lev2_opt1$pr_UGPA - do_whites_lev2_opt1$UGPA)
@@ -300,10 +300,10 @@ do_whites_lev2_opt1$pr_LSAT <- exp(
 # cf LSAT
 do_whites_lev2_opt1$scf_LSAT <- exp(
   lsat0 +
-    eta_u_lsat*U + 
-    data.matrix(data.frame(female=df_lev2$female, 
-                           male=df_lev2$male, 
-                           white=rep(1, nrow(df_lev2)), 
+    eta_u_lsat*U +
+    data.matrix(data.frame(female=df_lev2$female,
+                           male=df_lev2$male,
+                           white=rep(1, nrow(df_lev2)),
                            nonwhite=rep(0, nrow(df_lev2))))%*%eta_a_lsat)
 # deltas (or 'error terms')
 hist(do_whites_lev2_opt1$pr_LSAT - do_whites_lev2_opt1$LSAT)
@@ -311,20 +311,20 @@ hist(do_whites_lev2_opt1$pr_LSAT - do_whites_lev2_opt1$LSAT)
 summary(do_whites_lev2_opt1$scf_UGPA)
 summary(do_whites_lev2_opt1$scf_LSAT)
 
-do_whites_lev2_opt1$scf_LSAT <- 
+do_whites_lev2_opt1$scf_LSAT <-
   ifelse(do_whites_lev2_opt1$scf_LSAT > 48.00, 48.00, do_whites_lev2_opt1$scf_LSAT)
-do_whites_lev2_opt1$scf_LSAT <- 
+do_whites_lev2_opt1$scf_LSAT <-
   ifelse(do_whites_lev2_opt1$scf_LSAT < 10.00, 10.00, do_whites_lev2_opt1$scf_LSAT)
 summary(do_whites_lev2_opt1$scf_LSAT)
 
-do_whites_lev2_opt1$scf_UGPA <- 
+do_whites_lev2_opt1$scf_UGPA <-
   ifelse(do_whites_lev2_opt1$scf_UGPA > 4.00, 4.00, do_whites_lev2_opt1$scf_UGPA)
-do_whites_lev2_opt1$scf_UGPA <- 
+do_whites_lev2_opt1$scf_UGPA <-
   ifelse(do_whites_lev2_opt1$scf_UGPA < 0.00, 0.00, do_whites_lev2_opt1$scf_UGPA)
 summary(do_whites_lev2_opt1$scf_UGPA)
 
-write.table(do_whites_lev2_opt1, 
-            file = paste(path_rslt, "cf_LawSchool_lev2_1_doWhite.csv", sep = ""), 
+write.table(do_whites_lev2_opt1,
+            file = paste(path_rslt, "cf_LawSchool_lev2_1_doWhite.csv", sep = ""),
             sep = "|")
 
 
@@ -334,7 +334,7 @@ write.table(do_whites_lev2_opt1,
 # e.g., LSAT is a function of knowledge (i.e., U) and some randomness
 # Similar to opt 1, but trying to justify the MCMC step: the hidden confounder
 
-# Step 1: train model for descendant nodes, and 
+# Step 1: train model for descendant nodes, and
 model_ugpa_lev2 <- lm(UGPA ~
                         female + nonwhite + U + 1,
                       data=df_lev2)
@@ -344,11 +344,11 @@ model_lsat_lev2 <- lm(LSAT ~
                       data=df_lev2)
 
 # perform the abduction step: estimate the residuals
-df_lev2$resid_UGPA = df_lev2$UGPA - 
+df_lev2$resid_UGPA = df_lev2$UGPA -
   predict.glm(model_ugpa_lev2, newdata=df_lev2)
 hist(df_lev2$resid_UGPA)
 
-df_lev2$resid_LSAT = df_lev2$LSAT - 
+df_lev2$resid_LSAT = df_lev2$LSAT -
   predict.glm(model_lsat_lev2, newdata=df_lev2)
 hist(df_lev2$resid_LSAT)
 
@@ -377,20 +377,20 @@ df_lev2_do_male$scf_UGPA <- round(
 summary(df_lev2_do_male$scf_LSAT) # btw 10 - 48
 summary(df_lev2_do_male$scf_UGPA) # btw 0 - 4
 
-df_lev2_do_male$scf_LSAT <- 
+df_lev2_do_male$scf_LSAT <-
   ifelse(df_lev2_do_male$scf_LSAT > 48.00, 48.00, df_lev2_do_male$scf_LSAT)
-df_lev2_do_male$scf_LSAT <- 
+df_lev2_do_male$scf_LSAT <-
   ifelse(df_lev2_do_male$scf_LSAT < 10.00, 10.00, df_lev2_do_male$scf_LSAT)
 summary(df_lev2_do_male$scf_LSAT)
 
-df_lev2_do_male$scf_UGPA <- 
+df_lev2_do_male$scf_UGPA <-
   ifelse(df_lev2_do_male$scf_UGPA > 4.00, 4.00, df_lev2_do_male$scf_UGPA)
-df_lev2_do_male$scf_UGPA <- 
+df_lev2_do_male$scf_UGPA <-
   ifelse(df_lev2_do_male$scf_UGPA < 0.00, 0.00, df_lev2_do_male$scf_UGPA)
 summary(df_lev2_do_male$scf_UGPA)
 
-write.table(df_lev2_do_male, 
-            file = paste(path_rslt, "cf_LawSchool_lev2_2_doMale.csv", sep = ""), 
+write.table(df_lev2_do_male,
+            file = paste(path_rslt, "cf_LawSchool_lev2_2_doMale.csv", sep = ""),
             sep = "|")
 
 # do(Race:='White')
@@ -410,20 +410,20 @@ df_lev2_do_white$scf_UGPA <- round(
 summary(df_lev2_do_white$scf_LSAT) # btw 10 - 48
 summary(df_lev2_do_white$scf_UGPA) # btw 120 - 180
 
-df_lev2_do_white$scf_LSAT <- 
+df_lev2_do_white$scf_LSAT <-
   ifelse(df_lev2_do_white$scf_LSAT > 48.00, 48.00, df_lev2_do_white$scf_LSAT)
-df_lev2_do_white$scf_LSAT <- 
+df_lev2_do_white$scf_LSAT <-
   ifelse(df_lev2_do_white$scf_LSAT < 10.00, 10.00, df_lev2_do_white$scf_LSAT)
 summary(df_lev2_do_white$scf_LSAT)
 
-df_lev2_do_white$scf_UGPA <- 
+df_lev2_do_white$scf_UGPA <-
   ifelse(df_lev2_do_white$scf_UGPA > 4.00, 4.00, df_lev2_do_white$scf_UGPA)
-df_lev2_do_white$scf_UGPA <- 
+df_lev2_do_white$scf_UGPA <-
   ifelse(df_lev2_do_white$scf_UGPA < 0.00, 0.00, df_lev2_do_white$scf_UGPA)
 summary(df_lev2_do_white$scf_UGPA)
 
-write.table(df_lev2_do_white, 
-            file = paste(path_rslt, "cf_LawSchool_lev2_2_doWhite.csv", sep = ""), 
+write.table(df_lev2_do_white,
+            file = paste(path_rslt, "cf_LawSchool_lev2_2_doWhite.csv", sep = ""),
             sep = "|")
 
 #
