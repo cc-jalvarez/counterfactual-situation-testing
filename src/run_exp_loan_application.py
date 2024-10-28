@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 from src.situation_testing.situation_testing import SituationTesting
 
-# This script runs the experiments for Section 4.2
 # working directory
 wd = os.path.dirname(os.path.dirname(__file__))
 # relevant folders
@@ -26,7 +25,7 @@ feat_prot = 'Gender'
 feat_prot_vals = {'non_protected': 0, 'protected': 1}
 
 # k-neighbors
-k_list = [15, 30, 50, 100]
+k_list = [15, 30, 50, 100, 250]
 # significance level
 alpha = 0.05
 # tau deviation
@@ -35,7 +34,7 @@ tau = 0.0
 # for percentages of complainants:
 n_pro = df[df['Gender'] == 1].shape[0]
 
-# standard discrimination
+# discrimination
 res_k = pd.DataFrame(index=['stST', 'cfST', 'cfST_w', 'CF'])
 dic_res_k = {}
 res_p = pd.DataFrame(index=['stST', 'cfST', 'cfST_w', 'CF'])
@@ -58,9 +57,11 @@ for k in k_list:
     test_df = df.copy()
     st = SituationTesting()
 
-    st.setup_baseline(test_df, nominal_atts=['Gender'], continuous_atts=['AnnualSalary', 'AccountBalance'])
-    test_df['ST'] = st.run(target_att=feat_trgt, target_val=feat_trgt_vals, sensitive_att=feat_prot,
-                           sensitive_val=feat_prot_vals, k=k, alpha=alpha, tau=tau)
+    st.setup_baseline(test_df,
+                      nominal_atts=['Gender'], continuous_atts=['AnnualSalary', 'AccountBalance'])
+    test_df['ST'] = st.run(target_att=feat_trgt, target_val=feat_trgt_vals,
+                           sensitive_att=feat_prot, sensitive_val=feat_prot_vals,
+                           k=k, alpha=alpha, tau=tau)
 
     temp_k.append(test_df[test_df['ST'] > tau].shape[0])
     temp_p.append(round(test_df[test_df['ST'] > tau].shape[0] / n_pro * 100, 2))
@@ -73,9 +74,12 @@ for k in k_list:
     test_cfdf = cf_df.copy()
     cf_st = SituationTesting()
 
-    cf_st.setup_baseline(test_df, test_cfdf, nominal_atts=['Gender'], continuous_atts=['AnnualSalary', 'AccountBalance'])
-    test_df['cfST'] = cf_st.run(target_att=feat_trgt, target_val=feat_trgt_vals, sensitive_att=feat_prot,
-                                sensitive_val=feat_prot_vals, include_centers=False, k=k, alpha=alpha, tau=tau)
+    cf_st.setup_baseline(test_df, test_cfdf,
+                         nominal_atts=['Gender'], continuous_atts=['AnnualSalary', 'AccountBalance'])
+    test_df['cfST'] = cf_st.run(target_att=feat_trgt, target_val=feat_trgt_vals,
+                                sensitive_att=feat_prot, sensitive_val=feat_prot_vals,
+                                include_centers=False,
+                                k=k, alpha=alpha, tau=tau)
 
     temp_k.append(test_df[test_df['cfST'] > tau].shape[0])
     temp_p.append(round(test_df[test_df['cfST'] > tau].shape[0] / n_pro * 100, 2))
@@ -88,9 +92,12 @@ for k in k_list:
     test_cfdf = cf_df.copy()
     cf_st = SituationTesting()
 
-    cf_st.setup_baseline(test_df, test_cfdf, nominal_atts=['Gender'], continuous_atts=['AnnualSalary', 'AccountBalance'])
-    test_df['cfST'] = cf_st.run(target_att=feat_trgt, target_val=feat_trgt_vals, sensitive_att=feat_prot,
-                                sensitive_val=feat_prot_vals, include_centers=True, k=k, alpha=alpha, tau=tau)
+    cf_st.setup_baseline(test_df, test_cfdf,
+                         nominal_atts=['Gender'], continuous_atts=['AnnualSalary', 'AccountBalance'])
+    test_df['cfST'] = cf_st.run(target_att=feat_trgt, target_val=feat_trgt_vals,
+                                sensitive_att=feat_prot, sensitive_val=feat_prot_vals,
+                                include_centers=True,
+                                k=k, alpha=alpha, tau=tau)
 
     temp_k.append(test_df[test_df['cfST'] > tau].shape[0])
     temp_p.append(round(test_df[test_df['cfST'] > tau].shape[0] / n_pro * 100, 2))
@@ -111,7 +118,7 @@ for k in k_list:
     dic_res_k_pos[k] = temp_k_pos
     dic_res_p_pos[k] = temp_p_pos
 
-print('DONE')
+print('===== DONE =====')
 
 for k in dic_res_k.keys():
     res_k[f'k={k}'] = dic_res_k[k]
