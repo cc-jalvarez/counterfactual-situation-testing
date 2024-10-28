@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 from src.situation_testing.situation_testing import SituationTesting
 
-# This script runs the experiments for Section 4.1
 # working directory
 wd = os.path.dirname(os.path.dirname(__file__))
 # relevant folders
@@ -25,9 +24,8 @@ max_score = round(b1*4.00 + b2*48.00)    # 22
 df['Score'] = b1*df['UGPA'] + b2*df['LSAT']
 df['Y'] = np.where(df['Score'] >= min_score, 1, 0)
 
-# ST-specific params
 # k-neighbors
-k_list = [15, 30, 50, 100]
+k_list = [15, 30, 50, 100, 250]
 # significance level
 alpha = 0.05
 # tau deviation
@@ -91,7 +89,8 @@ for k in k_list:
     test_df = df.copy()
     st = SituationTesting()
 
-    st.setup_baseline(test_df, nominal_atts=['Gender'], continuous_atts=['LSAT', 'UGPA'])
+    st.setup_baseline(test_df,
+                      nominal_atts=['Gender'], continuous_atts=['LSAT', 'UGPA'])
     m_res_df['ST'] = st.run(target_att=feat_trgt, target_val=feat_trgt_vals,
                             sensitive_att=feat_prot, sensitive_val=feat_prot_vals,
                             k=k, alpha=alpha, tau=tau)
@@ -106,10 +105,12 @@ for k in k_list:
     test_cfdf = cf_df.copy()
     cf_st = SituationTesting()
 
-    cf_st.setup_baseline(test_df, test_cfdf, nominal_atts=['Gender'], continuous_atts=['LSAT', 'UGPA'])
+    cf_st.setup_baseline(test_df, test_cfdf,
+                         nominal_atts=['Gender'], continuous_atts=['LSAT', 'UGPA'])
     m_res_df['cfST'] = cf_st.run(target_att=feat_trgt, target_val=feat_trgt_vals,
                                  sensitive_att=feat_prot, sensitive_val=feat_prot_vals,
-                                 include_centers=False, k=k, alpha=alpha, tau=tau)
+                                 include_centers=False,
+                                 k=k, alpha=alpha, tau=tau)
 
     temp_k.append(m_res_df[m_res_df['cfST'] > tau].shape[0])
     temp_p.append(round(m_res_df[m_res_df['cfST'] > tau].shape[0] / n_pro * 100, 2))
@@ -121,10 +122,12 @@ for k in k_list:
     test_cfdf = cf_df.copy()
     cf_st = SituationTesting()
 
-    cf_st.setup_baseline(test_df, test_cfdf, nominal_atts=['Gender'], continuous_atts=['LSAT', 'UGPA'])
+    cf_st.setup_baseline(test_df, test_cfdf,
+                         nominal_atts=['Gender'], continuous_atts=['LSAT', 'UGPA'])
     m_res_df['cfST_w'] = cf_st.run(target_att=feat_trgt, target_val=feat_trgt_vals,
                                    sensitive_att=feat_prot, sensitive_val=feat_prot_vals,
-                                   include_centers=True, k=k, alpha=alpha, tau=tau)
+                                   include_centers=True,
+                                   k=k, alpha=alpha, tau=tau)
 
     temp_k.append(m_res_df[m_res_df['cfST_w'] > tau].shape[0])
     temp_p.append(round(m_res_df[m_res_df['cfST_w'] > tau].shape[0] / n_pro * 100, 2))
@@ -229,7 +232,8 @@ for k in k_list:
     test_df = df.copy()
     st = SituationTesting()
 
-    st.setup_baseline(test_df, nominal_atts=['Gender'], continuous_atts=['LSAT', 'UGPA'])
+    st.setup_baseline(test_df,
+                      nominal_atts=['Gender'], continuous_atts=['LSAT', 'UGPA'])
     w_res_df['ST'] = st.run(target_att=feat_trgt, target_val=feat_trgt_vals,
                             sensitive_att=feat_prot, sensitive_val=feat_prot_vals,
                             k=k, alpha=alpha, tau=tau)
@@ -244,10 +248,12 @@ for k in k_list:
     test_cfdf = cf_df.copy()
     cf_st = SituationTesting()
 
-    cf_st.setup_baseline(test_df, test_cfdf, nominal_atts=['Gender'], continuous_atts=['LSAT', 'UGPA'])
+    cf_st.setup_baseline(test_df, test_cfdf,
+                         nominal_atts=['Gender'], continuous_atts=['LSAT', 'UGPA'])
     w_res_df['cfST'] = cf_st.run(target_att=feat_trgt, target_val=feat_trgt_vals,
                                  sensitive_att=feat_prot, sensitive_val=feat_prot_vals,
-                                 include_centers=False, k=k, alpha=alpha, tau=tau)
+                                 include_centers=False,
+                                 k=k, alpha=alpha, tau=tau)
 
     temp_k.append(w_res_df[w_res_df['cfST'] > tau].shape[0])
     temp_p.append(round(w_res_df[w_res_df['cfST'] > tau].shape[0] / n_pro * 100, 2))
@@ -259,10 +265,12 @@ for k in k_list:
     test_cfdf = cf_df.copy()
     cf_st = SituationTesting()
 
-    cf_st.setup_baseline(test_df, test_cfdf, nominal_atts=['Gender'], continuous_atts=['LSAT', 'UGPA'])
+    cf_st.setup_baseline(test_df, test_cfdf,
+                         nominal_atts=['Gender'], continuous_atts=['LSAT', 'UGPA'])
     w_res_df['cfST_w'] = cf_st.run(target_att=feat_trgt, target_val=feat_trgt_vals,
                                    sensitive_att=feat_prot, sensitive_val=feat_prot_vals,
-                                   include_centers=True, k=k, alpha=alpha, tau=tau)
+                                   include_centers=True,
+                                   k=k, alpha=alpha, tau=tau)
 
     temp_k.append(w_res_df[w_res_df['cfST_w'] > tau].shape[0])
     temp_p.append(round(w_res_df[w_res_df['cfST_w'] > tau].shape[0] / n_pro * 100, 2))
@@ -426,7 +434,8 @@ for k in k_list:
     test_df = df.copy()
     st = SituationTesting()
 
-    st.setup_baseline(test_df, nominal_atts=['Gender'], continuous_atts=['LSAT', 'UGPA'])
+    st.setup_baseline(test_df,
+                      nominal_atts=['Gender'], continuous_atts=['LSAT', 'UGPA'])
     int_res_df['ST'] = st.run(target_att=feat_trgt, target_val=feat_trgt_vals,
                               sensitive_att=feat_prot, sensitive_val=feat_prot_vals,
                               k=k, alpha=alpha, tau=tau)
@@ -441,10 +450,12 @@ for k in k_list:
     test_cfdf = cf_df.copy()
     cf_st = SituationTesting()
 
-    cf_st.setup_baseline(test_df, test_cfdf, nominal_atts=['Gender'], continuous_atts=['LSAT', 'UGPA'])
+    cf_st.setup_baseline(test_df, test_cfdf,
+                         nominal_atts=['Gender'], continuous_atts=['LSAT', 'UGPA'])
     int_res_df['cfST'] = cf_st.run(target_att=feat_trgt, target_val=feat_trgt_vals,
                                    sensitive_att=feat_prot, sensitive_val=feat_prot_vals,
-                                   include_centers=False, k=k, alpha=alpha, tau=tau)
+                                   include_centers=False,
+                                   k=k, alpha=alpha, tau=tau)
 
     temp_k.append(int_res_df[int_res_df['cfST'] > tau].shape[0])
     temp_p.append(round(int_res_df[int_res_df['cfST'] > tau].shape[0] / n_pro * 100, 2))
@@ -456,10 +467,12 @@ for k in k_list:
     test_cfdf = cf_df.copy()
     cf_st = SituationTesting()
 
-    cf_st.setup_baseline(test_df, test_cfdf, nominal_atts=['Gender'], continuous_atts=['LSAT', 'UGPA'])
+    cf_st.setup_baseline(test_df, test_cfdf,
+                         nominal_atts=['Gender'], continuous_atts=['LSAT', 'UGPA'])
     int_res_df['cfST_w'] = cf_st.run(target_att=feat_trgt, target_val=feat_trgt_vals,
                                      sensitive_att=feat_prot, sensitive_val=feat_prot_vals,
-                                     include_centers=True, k=k, alpha=alpha, tau=tau)
+                                     include_centers=True,
+                                     k=k, alpha=alpha, tau=tau)
 
     temp_k.append(int_res_df[int_res_df['cfST_w'] > tau].shape[0])
     temp_p.append(round(int_res_df[int_res_df['cfST_w'] > tau].shape[0] / n_pro * 100, 2))
