@@ -25,7 +25,8 @@ feat_prot = 'Gender'
 feat_prot_vals = {'non_protected': 0, 'protected': 1}
 
 # k-neighbors
-k_list = [15, 30, 50, 100, 250]
+k_list = [15]
+# k_list = [15, 30, 50, 100, 250]
 # significance level
 alpha = 0.05
 # tau deviation
@@ -39,6 +40,11 @@ res_k = pd.DataFrame(index=['stST', 'cfST', 'cfST_w', 'CF'])
 dic_res_k = {}
 res_p = pd.DataFrame(index=['stST', 'cfST', 'cfST_w', 'CF'])
 dic_res_p = {}
+# track statistical significance
+res_k_sig = pd.DataFrame(index=['stST', 'cfST', 'cfST_w', 'CF'])
+dic_res_k_sig = {}
+res_p_sig = pd.DataFrame(index=['stST', 'cfST', 'cfST_w', 'CF'])
+dic_res_p_sig = {}
 
 # positive discrimination
 res_k_pos = pd.DataFrame(index=['stST', 'cfST', 'cfST_w', 'CF'])
@@ -50,6 +56,8 @@ for k in k_list:
 
     temp_k = []
     temp_p = []
+    temp_k_sig = []
+    temp_p_sig = []
     temp_k_pos = []
     temp_p_pos = []
 
@@ -62,9 +70,16 @@ for k in k_list:
     test_df['ST'] = st.run(target_att=feat_trgt, target_val=feat_trgt_vals,
                            sensitive_att=feat_prot, sensitive_val=feat_prot_vals,
                            k=k, alpha=alpha, tau=tau)
-
+    # discrimination
     temp_k.append(test_df[test_df['ST'] > tau].shape[0])
     temp_p.append(round(test_df[test_df['ST'] > tau].shape[0] / n_pro * 100, 2))
+    # discrimination: statistically significant
+    temp_test_disc = st.get_test_discrimination()
+    star_diff = temp_test_disc[(temp_test_disc['DiscEvi'] == 'Yes') & (temp_test_disc['StatEvi'] == 'Yes')].shape[0]
+    temp_k_sig.append(star_diff)
+    temp_p_sig.append(round(star_diff / n_pro * 100, 2))
+    del temp_test_disc, star_diff
+    # positive discrimination
     temp_k_pos.append(test_df[test_df['ST'] < tau].shape[0])
     temp_p_pos.append(round(test_df[test_df['ST'] < tau].shape[0] / n_pro * 100, 2))
     del test_df
@@ -80,9 +95,16 @@ for k in k_list:
                                 sensitive_att=feat_prot, sensitive_val=feat_prot_vals,
                                 include_centers=False,
                                 k=k, alpha=alpha, tau=tau)
-
+    # discrimination
     temp_k.append(test_df[test_df['cfST'] > tau].shape[0])
     temp_p.append(round(test_df[test_df['cfST'] > tau].shape[0] / n_pro * 100, 2))
+    # discrimination: statistically significant
+    temp_test_disc = cf_st.get_test_discrimination()
+    star_diff = temp_test_disc[(temp_test_disc['DiscEvi'] == 'Yes') & (temp_test_disc['StatEvi'] == 'Yes')].shape[0]
+    temp_k_sig.append(star_diff)
+    temp_p_sig.append(round(star_diff / n_pro * 100, 2))
+    del temp_test_disc, star_diff
+    # positive discrimination
     temp_k_pos.append(test_df[test_df['cfST'] < tau].shape[0])
     temp_p_pos.append(round(test_df[test_df['cfST'] < tau].shape[0] / n_pro * 100, 2))
     del test_df
@@ -98,43 +120,69 @@ for k in k_list:
                                 sensitive_att=feat_prot, sensitive_val=feat_prot_vals,
                                 include_centers=True,
                                 k=k, alpha=alpha, tau=tau)
-
+    # discrimination
     temp_k.append(test_df[test_df['cfST'] > tau].shape[0])
     temp_p.append(round(test_df[test_df['cfST'] > tau].shape[0] / n_pro * 100, 2))
+    # discrimination: statistically significant
+    temp_test_disc = cf_st.get_test_discrimination()
+    star_diff = temp_test_disc[(temp_test_disc['DiscEvi'] == 'Yes') & (temp_test_disc['StatEvi'] == 'Yes')].shape[0]
+    temp_k_sig.append(star_diff)
+    temp_p_sig.append(round(star_diff / n_pro * 100, 2))
+    del temp_test_disc, star_diff
+    # positive discrimination
     temp_k_pos.append(test_df[test_df['cfST'] < tau].shape[0])
     temp_p_pos.append(round(test_df[test_df['cfST'] < tau].shape[0] / n_pro * 100, 2))
 
     # Counterfactual Fairness
     test_df['CF'] = cf_st.res_counterfactual_unfairness
-
+    # CF discrimination
     temp_k.append(test_df[test_df['CF'] == 1].shape[0])
     temp_p.append(round(test_df[test_df['CF'] == 1].shape[0] / n_pro * 100, 2))
+    # CF discrimination: statistically significant
+    temp_test_disc = cf_st.get_test_discrimination()
+    star_cf = temp_test_disc[temp_test_disc['individual'].isin(test_df[test_df['CF'] == 1].index.to_list()) & (temp_test_disc['StatEvi'] == 'Yes')].shape[0]
+    temp_k_sig.append(star_cf)
+    temp_p_sig.append(round(star_cf / n_pro * 100, 2))
+    del temp_test_disc, star_cf
+    # CF positive discrimination
     temp_k_pos.append(test_df[test_df['CF'] == 2].shape[0])
     temp_p_pos.append(round(test_df[test_df['CF'] == 2].shape[0] / n_pro * 100, 2))
     del test_df
 
     dic_res_k[k] = temp_k
     dic_res_p[k] = temp_p
+    dic_res_k_sig[k] = temp_k_sig
+    dic_res_p_sig[k] = temp_p_sig
     dic_res_k_pos[k] = temp_k_pos
     dic_res_p_pos[k] = temp_p_pos
 
 print('===== DONE =====')
 
+print("===> discrimination")
 for k in dic_res_k.keys():
     res_k[f'k={k}'] = dic_res_k[k]
 print(res_k)
-
 for k in dic_res_p.keys():
     res_p[f'k={k}'] = dic_res_p[k]
 print(res_p)
 
+print("===> discrimination: statistically significant")
+for k in dic_res_k_sig.keys():
+    res_k_sig[f'k={k}'] = dic_res_k_sig[k]
+print(res_k_sig)
+for k in dic_res_p_sig.keys():
+    res_p_sig[f'k={k}'] = dic_res_p_sig[k]
+print(res_p_sig)
+
 res_k.to_csv(resu_path + '\\res_LoanApplication.csv', sep='|', index=True)
 res_p.to_csv(resu_path + '\\res_LoanApplication.csv', sep='|', index=True, mode='a')
+res_k_sig.to_csv(resu_path + '\\res_LoanApplication.csv', sep='|', index=True, mode='a')
+res_p_sig.to_csv(resu_path + '\\res_LoanApplication.csv', sep='|', index=True, mode='a')
 
+print("===> positive discrimination")
 for k in dic_res_k_pos.keys():
     res_k_pos[f'k={k}'] = dic_res_k_pos[k]
 print(res_k_pos)
-
 for k in dic_res_p_pos.keys():
     res_p_pos[f'k={k}'] = dic_res_p_pos[k]
 print(res_p_pos)
