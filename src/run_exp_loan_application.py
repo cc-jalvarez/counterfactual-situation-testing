@@ -25,8 +25,7 @@ feat_prot = 'Gender'
 feat_prot_vals = {'non_protected': 0, 'protected': 1}
 
 # k-neighbors
-k_list = [15]
-# k_list = [15, 30, 50, 100, 250]
+k_list = [15, 30, 50, 100, 250]
 # significance level
 alpha = 0.05
 # tau deviation
