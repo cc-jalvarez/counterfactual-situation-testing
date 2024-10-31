@@ -106,7 +106,8 @@ class SituationTesting:
             distance: str = 'kdd2011',
             max_d: float = None,
             include_centers: bool = None,
-            return_counterfactual_fairness: bool = True):
+            return_counterfactual_fairness: bool = True,
+            sigfig: int = 3):
 
         # when True, include ctr and tst centers in p1 and p2 calculations
         self.include_centers = include_centers if include_centers is not None else self.include_centers
@@ -160,7 +161,7 @@ class SituationTesting:
                 p1 = sum(self.df.loc[nn1, target_att] == bad_y_val) / k1  # control
                 p2 = sum(self.df.loc[nn2, target_att] == bad_y_val) / k2  # test
             # output(s)
-            res_st.loc[c] = round(p1 - p2, 3)  # diff
+            res_st.loc[c] = round(p1 - p2, sigfig)  # diff
             self._test_discrimination(c, p1, p2, k1, k2, alpha, tau)  # statistical diff
             # return neighbors info:
             self.res_dict_df_neighbors[int(c)] = {'ctr_idx': [i for i in nn1 if i != c],
@@ -182,29 +183,37 @@ class SituationTesting:
         return res_st
 
     def _test_discrimination(self, ind, p1, p2, k1, k2, alpha, tau, sigfig: int = 3):
-        z_score = round(st.norm.ppf(1 - alpha), sigfig)  # bef: st.norm.ppf(1 - (alpha / 2))
+        z_score = round(st.norm.ppf(1 - alpha), sigfig)  # it's one-sided test | bef: st.norm.ppf(1 - (alpha / 2))
         d_alpha = z_score * math.sqrt((p1 * (1 - p1) / k1) + (p2 * (1 - p2) / k2))
         conf_inter = [round((p1 - p2) - d_alpha, sigfig), round((p1 - p2) + d_alpha, sigfig)]
+        # diff used in the current run method
         org_diff = round(p1 - p2, sigfig)
-        if (p1 - p2) >= 0:  # from ST paper #1
+        # diff used in first ST paper TODO: discuss with Salvatore
+        if (p1 - p2) >= 0:
             diff = round(max(0, p1 - p2 - d_alpha), sigfig)
         else:
             diff = round(min(0, p1 - p2 + d_alpha), sigfig)
-        # discrimination evidence:
+        # evidence for discrimination?
         if org_diff > tau:
-            cf_st = 'Yes'
+            disc_evi = 'Yes'
         else:
-            cf_st = 'No'
+            disc_evi = 'No'
+        # statistically significant?
+        if conf_inter[0] <= tau <= conf_inter[1]:
+            stat_evi = 'No'
+        else:
+            stat_evi = 'Yes'
         self.wald_ci.append(
             {
                 'individual': ind,
-                'p1': p1,
-                'p2': p2,
+                'p_c': p1,
+                'p_t': p2,
                 'org_diff': org_diff,
                 'd_alpha': d_alpha,
                 'diff': diff,
                 'CIs': conf_inter,
-                'cfST': cf_st
+                'DiscEvi': disc_evi,
+                'StatEvi': stat_evi
             }
         )
 
