@@ -181,14 +181,14 @@ class SituationTesting:
         d_alpha = z_score * math.sqrt((p1 * (1 - p1) / k1) + (p2 * (1 - p2) / k2))
         conf_inter = [round((p1 - p2) - d_alpha, sigfig), round((p1 - p2) + d_alpha, sigfig)]
         # diff used in the current run method
-        org_diff = round(p1 - p2, sigfig)
-        # diff used in first ST paper TODO: discuss with Salvatore | best to remove as it's never used
-        if (p1 - p2) >= 0:
-            diff = round(max(0, p1 - p2 - d_alpha), sigfig)
-        else:
-            diff = round(min(0, p1 - p2 + d_alpha), sigfig)
+        delta_p = round(p1 - p2, sigfig)
+        # diff used in first ST paper TODO: discuss with Salvatore (we've never used it)
+        # if (p1 - p2) >= 0:
+        #     diff = round(max(0, p1 - p2 - d_alpha), sigfig)
+        # else:
+        #     diff = round(min(0, p1 - p2 + d_alpha), sigfig)
         # evidence for discrimination?
-        if org_diff > tau:
+        if delta_p > tau:
             disc_evi = 'Yes'
         else:
             disc_evi = 'No'
@@ -202,9 +202,9 @@ class SituationTesting:
                 'individual': ind,
                 'p_c': p1,
                 'p_t': p2,
-                'org_diff': org_diff,
-                'd_alpha': d_alpha,
-                'diff': diff,
+                'delta_p': delta_p,
+                # 'd_alpha': d_alpha,
+                # 'diff': diff,
                 'CIs': conf_inter,
                 'DiscEvi': disc_evi,
                 'StatEvi': stat_evi
