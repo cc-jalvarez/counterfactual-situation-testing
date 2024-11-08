@@ -40,7 +40,7 @@ class SituationTesting:
         # datasets
         self.df = df
         self.cf_df = cf_df
-        # all attribute information
+        # all attributes information
         nominal_atts = [] if nominal_atts is None else nominal_atts
         continuous_atts = [] if continuous_atts is None else continuous_atts
         ordinal_atts = [] if ordinal_atts is None else ordinal_atts
@@ -66,12 +66,6 @@ class SituationTesting:
                 self.cf_df[self.continuous_atts] = scaler.fit_transform(self.cf_df[self.continuous_atts])
 
     def top_k(self, t, tset, k: int, distance: str, max_d: float = None) -> List[Tuple[float, int]]:
-        """
-        Parameters:
-
-        Returns:
-        list of pairs: list of (distance, index) of the k closest instances to t at a distance of at most max_d
-        """
         ds = __DISTANCES__[distance](t, tset, self.relevant_atts, self.all_atts)
         q = []
         lenq = 0
@@ -86,6 +80,7 @@ class SituationTesting:
         q = [(-v, i) for v, i in q]
         return sorted(q)
 
+    # TODO: are we using this at all?
     def run_mul(self, target_att: str, target_val: Dict, sensitive_att: List[str], sensitive_val: List[Dict],
                 k: int,
                 alpha: float = 0.05,
@@ -101,21 +96,17 @@ class SituationTesting:
             return res_mul
 
     def run(self, target_att: str, target_val: Dict, sensitive_att: str, sensitive_val: Dict, k: int,
-            alpha: float = 0.05,
-            tau: float = 0.0,
-            distance: str = 'kdd2011',
-            max_d: float = None,
-            include_centers: bool = None,
-            return_counterfactual_fairness: bool = True,
-            sigfig: int = 3):
+            alpha: float = 0.05, tau: float = 0.0, distance: str = 'kdd2011', max_d: float = None,
+            include_centers: bool = None, return_counterfactual_fairness: bool = True, sigfig: int = 3):
 
-        # when True, include ctr and tst centers in p1 and p2 calculations
+        # when True, include ctr and tst centers in p1 (ctr group) and p2 (tst group) calculations
         self.include_centers = include_centers if include_centers is not None else self.include_centers
         # outputs:
         res_st = pd.Series(np.zeros(len(self.df)), index=self.df.index)
         self.wald_ci = []
         self.res_dict_df_neighbors = {}
         self.res_dict_dist_to_neighbors = {}
+        # when True, output counterfactual fairness
         if return_counterfactual_fairness and self.cf_df is not None:
             self.res_counterfactual_unfairness = pd.Series(np.zeros(len(self.df)), index=self.df.index)
         else:
@@ -133,19 +124,21 @@ class SituationTesting:
         for c in self.df[sensitive_set].index.to_list():
             ctr_k = self.top_k(self.df.loc[c, self.relevant_atts], ctr_search, k + 1, distance, max_d)
             if self.cf_df is not None:
-                # cfST: draw test center from counterfactual df
+                # CST: draw test search center from counterfactual df
                 if self.include_centers:
                     temp_tst_search = tst_search.copy()
                     temp_tst_search = temp_tst_search.append(self.cf_df.loc[c, self.relevant_atts])
+                    # CST w/
                     tst_k = self.top_k(self.cf_df.loc[c, self.relevant_atts], temp_tst_search, k + 1, distance, max_d)
                     del temp_tst_search
                 else:
+                    # CST w/o
                     tst_k = self.top_k(self.cf_df.loc[c, self.relevant_atts], tst_search, k, distance, max_d)
             else:
-                # standard ST: draw test center from factual df
+                # ST: draw test search center from factual df
                 tst_k = self.top_k(self.df.loc[c, self.relevant_atts], tst_search, k, distance, max_d)
             if self.cf_df is not None and self.include_centers:
-                # running cfST and include centers
+                # running CST w/
                 nn1 = [j for _, j in ctr_k]
                 nn2 = [j for _, j in tst_k]
                 k1 = len(nn1)
@@ -153,9 +146,9 @@ class SituationTesting:
                 p1 = sum(self.df.loc[nn1, target_att] == bad_y_val) / k1     # control
                 p2 = sum(self.cf_df.loc[nn2, target_att] == bad_y_val) / k2  # test
             else:
-                # for ST always exclude the centers (bcs always equal); optional for cfST (diff from CF)
+                # running ST or CST w/o
                 nn1 = [j for _, j in ctr_k if j != c]  # idx for ctr_k (minus center)
-                nn2 = [j for _, j in tst_k]            # idx for tst_k
+                nn2 = [j for _, j in tst_k]            # idx for tst_k (not necessary here: only added for CST w/)
                 k1 = len(nn1)
                 k2 = len(nn2)
                 p1 = sum(self.df.loc[nn1, target_att] == bad_y_val) / k1  # control
@@ -183,12 +176,13 @@ class SituationTesting:
         return res_st
 
     def _test_discrimination(self, ind, p1, p2, k1, k2, alpha, tau, sigfig: int = 3):
-        z_score = round(st.norm.ppf(1 - alpha), sigfig)  # it's one-sided test | bef: st.norm.ppf(1 - (alpha / 2))
+        # run a one-sided test
+        z_score = round(st.norm.ppf(1 - alpha), sigfig)
         d_alpha = z_score * math.sqrt((p1 * (1 - p1) / k1) + (p2 * (1 - p2) / k2))
         conf_inter = [round((p1 - p2) - d_alpha, sigfig), round((p1 - p2) + d_alpha, sigfig)]
         # diff used in the current run method
         org_diff = round(p1 - p2, sigfig)
-        # diff used in first ST paper TODO: discuss with Salvatore
+        # diff used in first ST paper TODO: discuss with Salvatore | best to remove as it's never used
         if (p1 - p2) >= 0:
             diff = round(max(0, p1 - p2 - d_alpha), sigfig)
         else:
@@ -198,7 +192,7 @@ class SituationTesting:
             disc_evi = 'Yes'
         else:
             disc_evi = 'No'
-        # statistically significant?
+        # statistically significant evidence?
         if conf_inter[0] <= tau <= conf_inter[1]:
             stat_evi = 'No'
         else:
