@@ -25,169 +25,97 @@ feat_prot = 'Gender'
 feat_prot_vals = {'non_protected': 0, 'protected': 1}
 
 # k-neighbors
-k_list = [15, 30, 50, 100, 250]
+k_list = [15, 30] #, 50, 100, 250]
+# k_list = [15, 30, 50, 100, 250]
 # significance level
 alpha = 0.05
 # tau deviation
 tau = 0.0
 
 # for percentages of complainants:
-n_pro = df[df['Gender'] == 1].shape[0]
+n_pro = df[df[feat_prot] == 1].shape[0]
 
-# discrimination
-res_k = pd.DataFrame(index=['stST', 'cfST', 'cfST_w', 'CF'])
-dic_res_k = {}
-res_p = pd.DataFrame(index=['stST', 'cfST', 'cfST_w', 'CF'])
-dic_res_p = {}
-# track statistical significance
-res_k_sig = pd.DataFrame(index=['stST', 'cfST', 'cfST_w', 'CF'])
-dic_res_k_sig = {}
-res_p_sig = pd.DataFrame(index=['stST', 'cfST', 'cfST_w', 'CF'])
-dic_res_p_sig = {}
-
-# positive discrimination
-res_k_pos = pd.DataFrame(index=['stST', 'cfST', 'cfST_w', 'CF'])
-dic_res_k_pos = {}
-res_p_pos = pd.DataFrame(index=['stST', 'cfST', 'cfST_w', 'CF'])
-dic_res_p_pos = {}
+# for the loop
+test_df = df.copy()
+test_cfdf = cf_df.copy()
+k_res_abs = []
+k_res_prc = []
+sigfig = 2
 
 for k in k_list:
+    print(k)
 
-    temp_k = []
-    temp_p = []
-    temp_k_sig = []
-    temp_p_sig = []
-    temp_k_pos = []
-    temp_p_pos = []
-
-    # Standard Situation Testing
-    test_df = df.copy()
+    # --- Situation Testing (ST)
     st = SituationTesting()
+    st.setup_baseline(test_df, nominal_atts=['Gender'], continuous_atts=['AnnualSalary', 'AccountBalance'])
+    st.run(target_att=feat_trgt, target_val=feat_trgt_vals, sensitive_att=feat_prot, sensitive_val=feat_prot_vals, k=k, alpha=alpha, tau=tau)
+    st_td = st.get_test_discrimination()
+    del st
 
-    st.setup_baseline(test_df,
-                      nominal_atts=['Gender'], continuous_atts=['AnnualSalary', 'AccountBalance'])
-    test_df['ST'] = st.run(target_att=feat_trgt, target_val=feat_trgt_vals,
-                           sensitive_att=feat_prot, sensitive_val=feat_prot_vals,
-                           k=k, alpha=alpha, tau=tau)
-    # discrimination
-    temp_k.append(test_df[test_df['ST'] > tau].shape[0])
-    temp_p.append(round(test_df[test_df['ST'] > tau].shape[0] / n_pro * 100, 2))
-    # discrimination: statistically significant
-    temp_test_disc = st.get_test_discrimination()
-    star_diff = temp_test_disc[(temp_test_disc['DiscEvi'] == 'Yes') & (temp_test_disc['StatEvi'] == 'Yes')].shape[0]
-    temp_k_sig.append(star_diff)
-    temp_p_sig.append(round(star_diff / n_pro * 100, 2))
-    del temp_test_disc, star_diff
-    # positive discrimination
-    temp_k_pos.append(test_df[test_df['ST'] < tau].shape[0])
-    temp_p_pos.append(round(test_df[test_df['ST'] < tau].shape[0] / n_pro * 100, 2))
-    del test_df
+    # --- Counterfactual Situation Testing without centers (CST wo)
+    cst_wo = SituationTesting()
+    cst_wo.setup_baseline(test_df, test_cfdf, nominal_atts=['Gender'], continuous_atts=['AnnualSalary', 'AccountBalance'])
+    cst_wo.run(target_att=feat_trgt, target_val=feat_trgt_vals, sensitive_att=feat_prot, sensitive_val=feat_prot_vals, include_centers=False, k=k, alpha=alpha, tau=tau)
+    cst_wo_td = cst_wo.get_test_discrimination()
+    del cst_wo
 
-    # Counterfactual Situation Testing
-    test_df = df.copy()
-    test_cfdf = cf_df.copy()
-    cf_st = SituationTesting()
+    # --- Counterfactual Situation Testing with centers (CST wi)
+    cst_wi = SituationTesting()
+    cst_wi.setup_baseline(test_df, test_cfdf, nominal_atts=['Gender'], continuous_atts=['AnnualSalary', 'AccountBalance'])
+    cst_wi.run(target_att=feat_trgt, target_val=feat_trgt_vals, sensitive_att=feat_prot, sensitive_val=feat_prot_vals, include_centers=True, k=k, alpha=alpha, tau=tau)
+    cst_wi_td = cst_wi.get_test_discrimination()
+    # it also includes Counterfactual Fairness (CF)
+    cf = cst_wi.res_counterfactual_unfairness
+    del cst_wi
 
-    cf_st.setup_baseline(test_df, test_cfdf,
-                         nominal_atts=['Gender'], continuous_atts=['AnnualSalary', 'AccountBalance'])
-    test_df['cfST'] = cf_st.run(target_att=feat_trgt, target_val=feat_trgt_vals,
-                                sensitive_att=feat_prot, sensitive_val=feat_prot_vals,
-                                include_centers=False,
-                                k=k, alpha=alpha, tau=tau)
-    # discrimination
-    temp_k.append(test_df[test_df['cfST'] > tau].shape[0])
-    temp_p.append(round(test_df[test_df['cfST'] > tau].shape[0] / n_pro * 100, 2))
-    # discrimination: statistically significant
-    temp_test_disc = cf_st.get_test_discrimination()
-    star_diff = temp_test_disc[(temp_test_disc['DiscEvi'] == 'Yes') & (temp_test_disc['StatEvi'] == 'Yes')].shape[0]
-    temp_k_sig.append(star_diff)
-    temp_p_sig.append(round(star_diff / n_pro * 100, 2))
-    del temp_test_disc, star_diff
-    # positive discrimination
-    temp_k_pos.append(test_df[test_df['cfST'] < tau].shape[0])
-    temp_p_pos.append(round(test_df[test_df['cfST'] < tau].shape[0] / n_pro * 100, 2))
-    del test_df
+    # --- k's results: absolutes
+    k_res_abs.append(
+        {
+            'k': k,
+            # Num. of discrimination cases
+            'ST': st_td[st_td['DiscEvi'] == 'Yes'].shape[0],
+            'CSTwo': cst_wo_td[cst_wo_td['DiscEvi'] == 'Yes'].shape[0],
+            'CSTwi': cst_wi_td[cst_wi_td['DiscEvi'] == 'Yes'].shape[0],
+            'CF': sum(cf == 1),
+            # Num. of discrimination cases that are statistically significant
+            'ST_sig': st_td[(st_td['DiscEvi'] == 'Yes') & (st_td['StatEvi'] == 'Yes')].shape[0],
+            'CSTwo_sig': cst_wo_td[(cst_wo_td['DiscEvi'] == 'Yes') & (cst_wo_td['StatEvi'] == 'Yes')].shape[0],
+            'CSTwi_sig': cst_wi_td[(cst_wi_td['DiscEvi'] == 'Yes') & (cst_wi_td['StatEvi'] == 'Yes')].shape[0],
+            'CF_sig': cst_wi_td[cst_wi_td['individual'].isin(cf[cf == 1].index.to_list()) & (cst_wi_td['StatEvi'] == 'Yes')].shape[0]
+        }
+    )
 
-    # Counterfactual Situation Testing (including ctr and tst centers)
-    test_df = df.copy()
-    test_cfdf = cf_df.copy()
-    cf_st = SituationTesting()
+    # --- k's results: percentages
+    k_res_prc.append(
+        {
+            'k': k,
+            # % of discrimination cases
+            'ST': round(k_res_abs[-1]['ST'] / n_pro * 100, sigfig),
+            'CSTwo': round(k_res_abs[-1]['CSTwo'] / n_pro * 100, sigfig),
+            'CSTwi': round(k_res_abs[-1]['CSTwi'] / n_pro * 100, sigfig),
+            'CF': round(k_res_abs[-1]['CF'] / n_pro * 100, sigfig),
+            # % of discrimination cases that are statistically significant
+            'ST_sig': round(k_res_abs[-1]['ST_sig'] / n_pro * 100, sigfig),
+            'CSTwo_sig': round(k_res_abs[-1]['CSTwo_sig'] / n_pro * 100, sigfig),
+            'CSTwi_sig': round(k_res_abs[-1]['CSTwi_sig'] / n_pro * 100, sigfig),
+            'CF_sig': round(k_res_abs[-1]['CF_sig'] / n_pro * 100, sigfig)
+        }
+    )
 
-    cf_st.setup_baseline(test_df, test_cfdf,
-                         nominal_atts=['Gender'], continuous_atts=['AnnualSalary', 'AccountBalance'])
-    test_df['cfST'] = cf_st.run(target_att=feat_trgt, target_val=feat_trgt_vals,
-                                sensitive_att=feat_prot, sensitive_val=feat_prot_vals,
-                                include_centers=True,
-                                k=k, alpha=alpha, tau=tau)
-    # discrimination
-    temp_k.append(test_df[test_df['cfST'] > tau].shape[0])
-    temp_p.append(round(test_df[test_df['cfST'] > tau].shape[0] / n_pro * 100, 2))
-    # discrimination: statistically significant
-    temp_test_disc = cf_st.get_test_discrimination()
-    star_diff = temp_test_disc[(temp_test_disc['DiscEvi'] == 'Yes') & (temp_test_disc['StatEvi'] == 'Yes')].shape[0]
-    temp_k_sig.append(star_diff)
-    temp_p_sig.append(round(star_diff / n_pro * 100, 2))
-    del temp_test_disc, star_diff
-    # positive discrimination
-    temp_k_pos.append(test_df[test_df['cfST'] < tau].shape[0])
-    temp_p_pos.append(round(test_df[test_df['cfST'] < tau].shape[0] / n_pro * 100, 2))
-
-    # Counterfactual Fairness
-    test_df['CF'] = cf_st.res_counterfactual_unfairness
-    # CF discrimination
-    temp_k.append(test_df[test_df['CF'] == 1].shape[0])
-    temp_p.append(round(test_df[test_df['CF'] == 1].shape[0] / n_pro * 100, 2))
-    # CF discrimination: statistically significant
-    temp_test_disc = cf_st.get_test_discrimination()
-    star_cf = temp_test_disc[temp_test_disc['individual'].isin(test_df[test_df['CF'] == 1].index.to_list()) & (temp_test_disc['StatEvi'] == 'Yes')].shape[0]
-    temp_k_sig.append(star_cf)
-    temp_p_sig.append(round(star_cf / n_pro * 100, 2))
-    del temp_test_disc, star_cf
-    # CF positive discrimination
-    temp_k_pos.append(test_df[test_df['CF'] == 2].shape[0])
-    temp_p_pos.append(round(test_df[test_df['CF'] == 2].shape[0] / n_pro * 100, 2))
-    del test_df
-
-    dic_res_k[k] = temp_k
-    dic_res_p[k] = temp_p
-    dic_res_k_sig[k] = temp_k_sig
-    dic_res_p_sig[k] = temp_p_sig
-    dic_res_k_pos[k] = temp_k_pos
-    dic_res_p_pos[k] = temp_p_pos
+    del st_td, cst_wo_td, cst_wi_td, cf
 
 print('===== DONE =====')
 
-print("===> discrimination")
-for k in dic_res_k.keys():
-    res_k[f'k={k}'] = dic_res_k[k]
-print(res_k)
-for k in dic_res_p.keys():
-    res_p[f'k={k}'] = dic_res_p[k]
-print(res_p)
+df_k_res_abs = pd.DataFrame(k_res_abs)
+del k_res_abs
+df_k_res_prc = pd.DataFrame(k_res_prc)
+del k_res_prc
 
-print("===> discrimination: statistically significant")
-for k in dic_res_k_sig.keys():
-    res_k_sig[f'k={k}'] = dic_res_k_sig[k]
-print(res_k_sig)
-for k in dic_res_p_sig.keys():
-    res_p_sig[f'k={k}'] = dic_res_p_sig[k]
-print(res_p_sig)
+print(df_k_res_abs)
+print(df_k_res_prc)
 
-res_k.to_csv(resu_path + '\\res_LoanApplication.csv', sep='|', index=True)
-res_p.to_csv(resu_path + '\\res_LoanApplication.csv', sep='|', index=True, mode='a')
-res_k_sig.to_csv(resu_path + '\\res_LoanApplication.csv', sep='|', index=True, mode='a')
-res_p_sig.to_csv(resu_path + '\\res_LoanApplication.csv', sep='|', index=True, mode='a')
-
-print("===> positive discrimination")
-for k in dic_res_k_pos.keys():
-    res_k_pos[f'k={k}'] = dic_res_k_pos[k]
-print(res_k_pos)
-for k in dic_res_p_pos.keys():
-    res_p_pos[f'k={k}'] = dic_res_p_pos[k]
-print(res_p_pos)
-
-res_k_pos.to_csv(resu_path + '\\res_pos_LoanApplication.csv', sep='|', index=True)
-res_p_pos.to_csv(resu_path + '\\res_pos_LoanApplication.csv', sep='|', index=True, mode='a')
+df_k_res_abs.to_csv(resu_path + '\\res_LoanApplication.csv', sep='|', index=True)
+df_k_res_prc.to_csv(resu_path + '\\res_LoanApplication.csv', sep='|', index=True, mode='a')
 
 #
 # EOF
