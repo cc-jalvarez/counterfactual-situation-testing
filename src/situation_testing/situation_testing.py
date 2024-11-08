@@ -154,8 +154,8 @@ class SituationTesting:
                 p1 = sum(self.df.loc[nn1, target_att] == bad_y_val) / k1  # control
                 p2 = sum(self.df.loc[nn2, target_att] == bad_y_val) / k2  # test
             # output(s)
-            res_st.loc[c] = round(p1 - p2, sigfig)  # diff
-            self._test_discrimination(c, p1, p2, k1, k2, alpha, tau)  # statistical diff
+            res_st.loc[c] = round(p1 - p2, sigfig)  # delta
+            self._test_discrimination(c, p1, p2, k1, k2, alpha, tau)  # statistical tests (includes delta)
             # return neighbors info:
             self.res_dict_df_neighbors[int(c)] = {'ctr_idx': [i for i in nn1 if i != c],
                                                   'tst_idx': [i for i in nn2 if i != c]}
