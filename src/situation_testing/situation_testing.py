@@ -167,7 +167,7 @@ class SituationTesting:
                     # discrimination: neg_y to pos_y
                     if self.df.loc[c, target_att] == bad_y_val:
                         self.res_counterfactual_unfairness[c] = 1
-                    # positive discrimination: pos_y to neg_y
+                    # positive discrimination: pos_y to neg_y  TODO: revise this notion | unclear to me
                     if self.df.loc[c, target_att] != bad_y_val:
                         self.res_counterfactual_unfairness[c] = 2
                 else:
@@ -175,37 +175,57 @@ class SituationTesting:
 
         return res_st
 
-    def _test_discrimination(self, ind, p1, p2, k1, k2, alpha, tau, sigfig: int = 3):
-        # run a one-sided test
-        z_score = round(st.norm.ppf(1 - alpha), sigfig)
-        d_alpha = z_score * math.sqrt((p1 * (1 - p1) / k1) + (p2 * (1 - p2) / k2))
-        conf_inter = [round((p1 - p2) - d_alpha, sigfig), round((p1 - p2) + d_alpha, sigfig)]
-        # diff used in the current run method
-        delta_p = round(p1 - p2, sigfig)
-        # diff used in first ST paper TODO: discuss with Salvatore (we've never used it)
+    def _test_discrimination(self, ind, p1, p2, k1, k2, alpha, tau, sigfig: int = 3, ngtv_disc: bool = False):
+        # the point estimate
+        delta_p = p1 - p2
+        # for one-sided test: used for ST and CST
+        z_score_1 = round(st.norm.ppf(1 - alpha), sigfig)
+        d_alpha_1 = z_score_1 * math.sqrt((p1 * (1 - p1) / k1) + (p2 * (1 - p2) / k2))
+        # negative discrimination
+        if ngtv_disc:
+            # evidence for discrimination?
+            if round(delta_p, sigfig) > tau:
+                disc_evi = 'Yes'
+            else:
+                disc_evi = 'No'
+            # statistically significant evidence?
+            ci_1 = round(delta_p - d_alpha_1, sigfig)  # round(min(0, p1 - p2 - d_alpha), sigfig)
+            if tau >= ci_1:
+                stat_evi = 'No'
+            else:
+                stat_evi = 'Yes'
+        # positive discrimination
+        else:
+            # evidence for discrimination?
+            if round(delta_p, sigfig) < tau:
+                disc_evi = 'Yes'
+            else:
+                disc_evi = 'No'
+            # statistically significant evidence?
+            ci_1 = round(delta_p + d_alpha_1, sigfig)  # round(max(0, p1 - p2 + d_alpha), sigfig)
+            if tau <= ci_1:
+                stat_evi = 'No'
+            else:
+                stat_evi = 'Yes'
+        # for two-sided test: used for confidence in CF
+        z_score_2 = round(st.norm.ppf(1 - alpha/2), sigfig)
+        d_alpha_2 = z_score_2 * math.sqrt((p1 * (1 - p1) / k1) + (p2 * (1 - p2) / k2))
+        ci_2 = [round(delta_p - d_alpha_2, sigfig), round(delta_p + d_alpha_2, sigfig)]
+
+        # TODO: check with Salvatore before implementing
         # if (p1 - p2) >= 0:
-        #     diff = round(max(0, p1 - p2 - d_alpha), sigfig)
+        #     diff = round(max(0, p1 - p2 - d_alpha), sigfig) # these are the bounds!!!!
         # else:
         #     diff = round(min(0, p1 - p2 + d_alpha), sigfig)
-        # evidence for discrimination?
-        if delta_p > tau:
-            disc_evi = 'Yes'
-        else:
-            disc_evi = 'No'
-        # statistically significant evidence?
-        if conf_inter[0] <= tau <= conf_inter[1]:
-            stat_evi = 'No'
-        else:
-            stat_evi = 'Yes'
+
         self.wald_ci.append(
             {
                 'individual': ind,
                 'p_c': p1,
                 'p_t': p2,
                 'delta_p': delta_p,
-                # 'd_alpha': d_alpha,
-                # 'diff': diff,
-                'CIs': conf_inter,
+                'CI_1st': ci_1,
+                'CI_2st': ci_2,
                 'DiscEvi': disc_evi,
                 'StatEvi': stat_evi
             }
