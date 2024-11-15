@@ -30,6 +30,8 @@ k_list = [15, 30, 50, 100, 250]
 alpha = 0.05
 # tau deviation
 tau = 0.0
+# type of discrimination
+testing_for_negative_disc = True  # TODO
 
 # for percentages of complainants:
 n_pro = df[df[feat_prot] == 1].shape[0]
