@@ -178,7 +178,7 @@ class SituationTesting:
     def _test_discrimination(self, ind, p1, p2, k1, k2, alpha, tau, sigfig: int = 3, ngtv_disc: bool = False):
         # the point estimate
         delta_p = p1 - p2
-        # for one-sided test: used for ST and CST
+        # one-sided test: used for ST and CST
         z_score_1 = round(st.norm.ppf(1 - alpha), sigfig)
         d_alpha_1 = z_score_1 * math.sqrt((p1 * (1 - p1) / k1) + (p2 * (1 - p2) / k2))
         # negative discrimination
@@ -207,14 +207,14 @@ class SituationTesting:
                 stat_evi = 'No'
             else:
                 stat_evi = 'Yes'
-        # for two-sided test: used for confidence in CF
+        # two-sided test: used for confidence in CF
         z_score_2 = round(st.norm.ppf(1 - alpha/2), sigfig)
         d_alpha_2 = z_score_2 * math.sqrt((p1 * (1 - p1) / k1) + (p2 * (1 - p2) / k2))
         ci_2 = [round(delta_p - d_alpha_2, sigfig), round(delta_p + d_alpha_2, sigfig)]
 
         # TODO: check with Salvatore before implementing
         # if (p1 - p2) >= 0:
-        #     diff = round(max(0, p1 - p2 - d_alpha), sigfig) # these are the bounds!!!!
+        #     diff = round(max(0, p1 - p2 - d_alpha), sigfig)
         # else:
         #     diff = round(min(0, p1 - p2 + d_alpha), sigfig)
 
