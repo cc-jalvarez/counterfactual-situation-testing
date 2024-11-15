@@ -175,7 +175,7 @@ class SituationTesting:
 
         return res_st
 
-    def _test_discrimination(self, ind, p1, p2, k1, k2, alpha, tau, sigfig: int = 3, ngtv_disc: bool = False):
+    def _test_discrimination(self, ind, p1, p2, k1, k2, alpha, tau, sigfig: int = 3, ngtv_disc: bool = True):
         # the point estimate
         delta_p = p1 - p2
         # one-sided test: used for ST and CST
