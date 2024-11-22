@@ -25,7 +25,7 @@ df['Score'] = b1*df['UGPA'] + b2*df['LSAT']
 df['Y'] = np.where(df['Score'] >= min_score, 1, 0)
 
 # k-neighbors
-k_list = [15, 30, 50, 100, 250]
+k_list = [15]  # k_list = [15, 30, 50, 100, 250]
 # significance level
 alpha = 0.05
 # tau deviation
@@ -33,11 +33,11 @@ tau = 0.0
 # type of discrimination
 testing_for_negative_disc = True  # TODO
 
-# shared features for all runs
+# shared features/params for all runs
 feat_trgt = 'Y'
 feat_trgt_vals = {'positive': 1, 'negative': 0}
-# list of relevant features
 feat_rlvt = ['LSAT', 'UGPA']
+sigfig = 2
 
 print('###############################################################################################################')
 print('# Single discrimination: do(Gender:= Male)')
@@ -52,7 +52,8 @@ cf_df = cf_df.rename(columns={'Sex': 'Gender', 'scf_LSAT': 'LSAT', 'scf_UGPA': '
 # protected feature
 feat_prot = 'Gender'
 # values for the protected feature: use 'non_protected' and 'protected'
-feat_prot_vals = {'non_protected': 'Male', 'protected': 'Female'}
+feat_prot_vals = {'non_protected': 'Male',
+                  'protected': 'Female'}
 
 # add the target feature's counterfactual
 cf_df['Score'] = b1*cf_df['UGPA'] + b2*cf_df['LSAT']
@@ -64,10 +65,13 @@ test_cfdf = cf_df.copy()
 n_pro = df[df['Gender'] == 'Female'].shape[0]
 k_res_abs = []
 k_res_prc = []
-sigfig = 2
+
+# store results for multiple disc.: G for gender
+g_k_res = {}
 
 for k in k_list:
     print(k)
+    g_k_res[k] = {}
 
     # --- Situation Testing (ST)
     st = SituationTesting()
@@ -75,6 +79,7 @@ for k in k_list:
     st.run(target_att=feat_trgt, target_val=feat_trgt_vals, sensitive_att=feat_prot, sensitive_val=feat_prot_vals, k=k, alpha=alpha, tau=tau)
     st_td = st.get_test_discrimination()
     del st
+    g_k_res[k]['ST'] = st_td
 
     # --- Counterfactual Situation Testing without centers (CST wo)
     cst_wo = SituationTesting()
@@ -82,6 +87,7 @@ for k in k_list:
     cst_wo.run(target_att=feat_trgt, target_val=feat_trgt_vals, sensitive_att=feat_prot, sensitive_val=feat_prot_vals, include_centers=False, k=k, alpha=alpha, tau=tau)
     cst_wo_td = cst_wo.get_test_discrimination()
     del cst_wo
+    g_k_res[k]['CSTwo'] = cst_wo_td
 
     # --- Counterfactual Situation Testing with centers (CST wi)
     cst_wi = SituationTesting()
@@ -91,6 +97,8 @@ for k in k_list:
     # Includes Counterfactual Fairness (CF)
     cf = cst_wi.res_counterfactual_unfairness
     del cst_wi
+    g_k_res[k]['CSTwi'] = cst_wi_td
+    g_k_res[k]['CF'] = cf
 
     # --- k's results: absolutes
     k_res_abs.append(
@@ -133,9 +141,6 @@ df_k_res_abs = pd.DataFrame(k_res_abs)
 del k_res_abs
 df_k_res_prc = pd.DataFrame(k_res_prc)
 del k_res_prc
-
-# store results for multiple disc.: g for gender
-g_k_res = df_k_res_abs
 
 print(df_k_res_abs)
 print(df_k_res_prc)
@@ -161,7 +166,8 @@ cf_df['Y'] = np.where(cf_df['Score'] >= min_score, 1, 0)
 # protected feature
 feat_prot = 'Race'
 # values for the protected feature: use 'non_protected' and 'protected' accordingly
-feat_prot_vals = {'non_protected': 'White', 'protected': 'NonWhite'}
+feat_prot_vals = {'non_protected': 'White',
+                  'protected': 'NonWhite'}
 
 # for the loop
 test_df = df.copy()
@@ -169,10 +175,13 @@ test_cfdf = cf_df.copy()
 n_pro = df[df['Race'] == 'NonWhite'].shape[0]
 k_res_abs = []
 k_res_prc = []
-sigfig = 2
+
+# store results for multiple disc.: R for race
+r_k_res = {}
 
 for k in k_list:
     print(k)
+    r_k_res[k] = {}
 
     # --- Situation Testing (ST)
     st = SituationTesting()
@@ -180,6 +189,7 @@ for k in k_list:
     st.run(target_att=feat_trgt, target_val=feat_trgt_vals, sensitive_att=feat_prot, sensitive_val=feat_prot_vals, k=k, alpha=alpha, tau=tau)
     st_td = st.get_test_discrimination()
     del st
+    r_k_res[k]['ST'] = st_td
 
     # --- Counterfactual Situation Testing without centers (CST wo)
     cst_wo = SituationTesting()
@@ -187,6 +197,7 @@ for k in k_list:
     cst_wo.run(target_att=feat_trgt, target_val=feat_trgt_vals, sensitive_att=feat_prot, sensitive_val=feat_prot_vals, include_centers=False, k=k, alpha=alpha, tau=tau)
     cst_wo_td = cst_wo.get_test_discrimination()
     del cst_wo
+    r_k_res[k]['CSTwo'] = cst_wo_td
 
     # --- Counterfactual Situation Testing with centers (CST wi)
     cst_wi = SituationTesting()
@@ -196,6 +207,8 @@ for k in k_list:
     # Includes Counterfactual Fairness (CF)
     cf = cst_wi.res_counterfactual_unfairness
     del cst_wi
+    r_k_res[k]['CSTwi'] = cst_wi_td
+    r_k_res[k]['CF'] = cf
 
     # --- k's results: absolutes
     k_res_abs.append(
@@ -239,9 +252,6 @@ del k_res_abs
 df_k_res_prc = pd.DataFrame(k_res_prc)
 del k_res_prc
 
-# store results for multiple disc.: r for race
-r_k_res = df_k_res_abs
-
 print(df_k_res_abs)
 print(df_k_res_prc)
 
@@ -249,73 +259,81 @@ df_k_res_abs.to_csv(resu_path + f'\\res_{do}_LawSchool.csv', sep='|', index=Fals
 df_k_res_prc.to_csv(resu_path + f'\\res_{do}_LawSchool.csv', sep='|', index=False, mode='a')
 del df_k_res_abs, df_k_res_prc
 
-########################################################################################################################
-# Multiple discrimination: do(Gender:= Female) + do(Race:= White)
-########################################################################################################################
+print('###############################################################################################################')
+print('# Multiple discrimination: do(Gender:= Female) + do(Race:= White)')
+print('###############################################################################################################')
 
-# use g_k_res and r_k_res
-
-
-# can run for each k... use the lists k_m_res and k_w_res
-df_res_multiple_k = pd.DataFrame(index=['stST', 'cfST', 'cfST_w', 'CF'])
-df_res_multiple_p = pd.DataFrame(index=['stST', 'cfST', 'cfST_w', 'CF'])
-res_multiple_k = dict()
-res_multiple_p = dict()
-
-# for percentages of complainants:
+# for the loop
 n_pro = org_df[(org_df['sex'] == 'Female') & (org_df['race_nonwhite'] == 'NonWhite')].shape[0]
+k_res_abs = []
+k_res_prc = []
 
-for df_i in range(len(k_list)):
+for k in k_list:
+    print(k)
+    # use g_k_res and r_k_res: these are nested dictionaries using k run and method
 
-    temp_k = []
-    temp_p = []
+    # --- k's results: absolutes
+    k_res_abs.append(
+        {
+            'k': k,
+            # Num. of discrimination cases
+            'ST': sum((g_k_res[k]['ST']['DiscEvi'] == 'Yes') & (r_k_res[k]['ST']['DiscEvi'] == 'Yes')),
+            'CSTwo': sum((g_k_res[k]['CSTwo']['DiscEvi'] == 'Yes') & (r_k_res[k]['CSTwo']['DiscEvi'] == 'Yes')),
+            'CSTwi': sum((g_k_res[k]['CSTwi']['DiscEvi'] == 'Yes') & (r_k_res[k]['CSTwi']['DiscEvi'] == 'Yes')),
+            'CF': sum((g_k_res[k]['CF'] == 1.0) & (r_k_res[k]['CF'] == 1.0)),
+            # Num. of discrimination cases that are statistically significant
+            'ST_sig': sum(
+                ((g_k_res[k]['ST']['DiscEvi'] == 'Yes') & (r_k_res[k]['ST']['StatEvi'] == 'Yes')) &
+                ((g_k_res[k]['ST']['DiscEvi'] == 'Yes') & (r_k_res[k]['ST']['StatEvi'] == 'Yes'))
+            ),
+            'CSTwo_sig': sum(
+                ((g_k_res[k]['CSTwo']['DiscEvi'] == 'Yes') & (r_k_res[k]['CSTwo']['StatEvi'] == 'Yes')) &
+                ((g_k_res[k]['CSTwo']['DiscEvi'] == 'Yes') & (r_k_res[k]['CSTwo']['StatEvi'] == 'Yes'))),
+            'CSTwi_sig': sum(
+                ((g_k_res[k]['CSTwi']['DiscEvi'] == 'Yes') & (r_k_res[k]['CSTwi']['StatEvi'] == 'Yes')) &
+                ((g_k_res[k]['CSTwi']['DiscEvi'] == 'Yes') & (r_k_res[k]['CSTwi']['StatEvi'] == 'Yes'))
+            ),
+            'CF_sig': sum(
+                (g_k_res[k]['CSTwi']['individual'].isin(g_k_res[k]['CF'][g_k_res[k]['CF'] == 1.0].index.to_list()) &
+                    g_k_res[k]['CSTwi']['StatEvi'] == 'Yes')
+                &
+                (r_k_res[k]['CSTwi']['individual'].isin(r_k_res[k]['CF'][r_k_res[k]['CF'] == 1.0].index.to_list()) &
+                    r_k_res[k]['CSTwi']['StatEvi'] == 'Yes')
+            ),
+        }
+    )
 
-    # ST
-    temp_k.append(pd.merge(left=k_m_res[df_i][k_m_res[df_i]['ST'] > tau],
-                           right=k_w_res[df_i][k_w_res[df_i]['ST'] > tau],
-                           how='inner', left_index=True, right_index=True).shape[0]
-                  )
-    temp_p.append(round(temp_k[-1]/n_pro, 2))
+    # --- k's results: percentages
+    k_res_prc.append(
+        {
+            'k': k,
+            # % of discrimination cases
+            'ST': round(k_res_abs[-1]['ST'] / n_pro * 100, sigfig),
+            'CSTwo': round(k_res_abs[-1]['CSTwo'] / n_pro * 100, sigfig),
+            'CSTwi': round(k_res_abs[-1]['CSTwi'] / n_pro * 100, sigfig),
+            'CF': round(k_res_abs[-1]['CF'] / n_pro * 100, sigfig),
+            # % of discrimination cases that are statistically significant
+            'ST_sig': round(k_res_abs[-1]['ST_sig'] / n_pro * 100, sigfig),
+            'CSTwo_sig': round(k_res_abs[-1]['CSTwo_sig'] / n_pro * 100, sigfig),
+            'CSTwi_sig': round(k_res_abs[-1]['CSTwi_sig'] / n_pro * 100, sigfig),
+            'CF_sig': round(k_res_abs[-1]['CF_sig'] / n_pro * 100, sigfig)
+        }
+    )
 
-    # CST (w/o)
-    temp_k.append(pd.merge(left=k_m_res[df_i][k_m_res[df_i]['cfST'] > tau],
-                           right=k_w_res[df_i][k_w_res[df_i]['cfST'] > tau],
-                           how='inner', left_index=True, right_index=True).shape[0]
-                  )
-    temp_p.append(round(temp_k[-1] / n_pro, 2))
+print('===== DONE =====')
+del g_k_res, r_k_res
 
-    # CST (w)
-    temp_k.append(pd.merge(left=k_m_res[df_i][k_m_res[df_i]['cfST_w'] > tau],
-                           right=k_w_res[df_i][k_w_res[df_i]['cfST_w'] > tau],
-                           how='inner', left_index=True, right_index=True).shape[0]
-                  )
-    temp_p.append(round(temp_k[-1] / n_pro, 2))
+df_k_res_abs = pd.DataFrame(k_res_abs)
+del k_res_abs
+df_k_res_prc = pd.DataFrame(k_res_prc)
+del k_res_prc
 
-    # CF
-    temp_k.append(pd.merge(left=k_m_res[df_i][k_m_res[df_i]['CF'] == 1],
-                           right=k_w_res[df_i][k_w_res[df_i]['CF'] == 1],
-                           how='inner', left_index=True, right_index=True).shape[0]
-                  )
-    temp_p.append(round(temp_k[-1] / n_pro, 2))
+print(df_k_res_abs)
+print(df_k_res_prc)
 
-    print(temp_k)
-    print(temp_p)
-
-    res_multiple_k[k_list[df_i]] = temp_k
-    res_multiple_p[k_list[df_i]] = temp_p
-
-print('DONE')
-
-for k in res_multiple_k.keys():
-    df_res_multiple_k[f'k={k}'] = res_multiple_k[k]
-print(df_res_multiple_k)
-
-for k in res_multiple_p.keys():
-    df_res_multiple_p[f'k={k}'] = res_multiple_p[k]
-print(df_res_multiple_p)
-
-df_res_multiple_k.to_csv(resu_path + f'\\res_Multiple_LawSchool.csv', sep='|', index=True)
-df_res_multiple_p.to_csv(resu_path + f'\\res_Multiple_LawSchool.csv', sep='|', index=True, mode='a')
+df_k_res_abs.to_csv(resu_path + f'\\res_Multiple_LawSchool.csv', sep='|', index=False)
+df_k_res_prc.to_csv(resu_path + f'\\res_Multiple_LawSchool.csv', sep='|', index=False, mode='a')
+del df_k_res_abs, df_k_res_prc
 
 print('###############################################################################################################')
 print('# Intersectional discrimination: do(Gender:= Female) & do(Race:= White)')
@@ -346,7 +364,6 @@ test_cfdf = cf_df.copy()
 n_pro = df[df['GenderRace'] == 'Female-NonWhite'].shape[0]
 k_res_abs = []
 k_res_prc = []
-sigfig = 2
 
 for k in k_list:
     print(k)
