@@ -270,36 +270,57 @@ k_res_prc = []
 
 for k in k_list:
     print(k)
+
     # use g_k_res and r_k_res: these are nested dictionaries using k run and method
+    # --- ST
+    g_st = g_k_res[k]['ST']
+    r_st = r_k_res[k]['ST']
+    # --- CST wo
+    g_cstwo = g_k_res[k]['CSTwo']
+    r_cstwo = r_k_res[k]['CSTwo']
+    # --- CST wi
+    g_cstwi = g_k_res[k]['CSTwi']
+    r_cstwi = r_k_res[k]['CSTwi']
+    # --- CF
+    g_cf = g_k_res[k]['CF']
+    r_cf = r_k_res[k]['CF']
 
     # --- k's results: absolutes
     k_res_abs.append(
         {
             'k': k,
             # Num. of discrimination cases
-            'ST': sum((g_k_res[k]['ST']['DiscEvi'] == 'Yes') & (r_k_res[k]['ST']['DiscEvi'] == 'Yes')),
-            'CSTwo': sum((g_k_res[k]['CSTwo']['DiscEvi'] == 'Yes') & (r_k_res[k]['CSTwo']['DiscEvi'] == 'Yes')),
-            'CSTwi': sum((g_k_res[k]['CSTwi']['DiscEvi'] == 'Yes') & (r_k_res[k]['CSTwi']['DiscEvi'] == 'Yes')),
+            'ST': len(
+                set(g_st[g_st['DiscEvi'] == 'Yes']['individual'].to_list()) &
+                set(r_st[r_st['DiscEvi'] == 'Yes']['individual'].to_list())
+            ),
+            'CSTwo': len(
+                set(g_cstwo[g_cstwo['DiscEvi'] == 'Yes']['individual'].to_list()) &
+                set(r_cstwo[r_cstwo['DiscEvi'] == 'Yes']['individual'].to_list())
+            ),
+            'CSTwi': len(
+                set(g_cstwi[g_cstwi['DiscEvi'] == 'Yes']['individual'].to_list()) &
+                set(r_cstwi[r_cstwi['DiscEvi'] == 'Yes']['individual'].to_list())
+            ),
             'CF': sum((g_k_res[k]['CF'] == 1.0) & (r_k_res[k]['CF'] == 1.0)),
             # Num. of discrimination cases that are statistically significant
-            'ST_sig': sum(
-                ((g_k_res[k]['ST']['DiscEvi'] == 'Yes') & (r_k_res[k]['ST']['StatEvi'] == 'Yes')) &
-                ((g_k_res[k]['ST']['DiscEvi'] == 'Yes') & (r_k_res[k]['ST']['StatEvi'] == 'Yes'))
+            'ST_sig': len(
+                set(g_st[(g_st['DiscEvi'] == 'Yes') & (g_st['StatEvi'] == 'Yes')]['individual'].to_list()) &
+                set(r_st[(r_st['DiscEvi'] == 'Yes') & (r_st['StatEvi'] == 'Yes')]['individual'].to_list())
             ),
-            'CSTwo_sig': sum(
-                ((g_k_res[k]['CSTwo']['DiscEvi'] == 'Yes') & (r_k_res[k]['CSTwo']['StatEvi'] == 'Yes')) &
-                ((g_k_res[k]['CSTwo']['DiscEvi'] == 'Yes') & (r_k_res[k]['CSTwo']['StatEvi'] == 'Yes'))),
-            'CSTwi_sig': sum(
-                ((g_k_res[k]['CSTwi']['DiscEvi'] == 'Yes') & (r_k_res[k]['CSTwi']['StatEvi'] == 'Yes')) &
-                ((g_k_res[k]['CSTwi']['DiscEvi'] == 'Yes') & (r_k_res[k]['CSTwi']['StatEvi'] == 'Yes'))
+            'CSTwo_sig': len(
+                set(g_cstwo[(g_cstwo['DiscEvi'] == 'Yes') & (g_cstwo['StatEvi'] == 'Yes')]['individual'].to_list()) &
+                set(r_cstwo[(r_cstwo['DiscEvi'] == 'Yes') & (r_cstwo['StatEvi'] == 'Yes')]['individual'].to_list())
             ),
-            'CF_sig': sum(
-                (g_k_res[k]['CSTwi']['individual'].isin(g_k_res[k]['CF'][g_k_res[k]['CF'] == 1.0].index.to_list()) &
-                    g_k_res[k]['CSTwi']['StatEvi'] == 'Yes')
+            'CSTwi_sig': len(
+                set(g_cstwi[(g_cstwi['DiscEvi'] == 'Yes') & (g_cstwi['StatEvi'] == 'Yes')]['individual'].to_list()) &
+                set(r_cstwi[(r_cstwi['DiscEvi'] == 'Yes') & (r_cstwi['StatEvi'] == 'Yes')]['individual'].to_list())
+            ),
+            'CF_sig': len(
+                set(g_cstwi[g_cstwi['individual'].isin(g_cf[g_cf == 1].index.to_list()) & (g_cstwi['StatEvi'] == 'Yes')]['individual'].to_list())
                 &
-                (r_k_res[k]['CSTwi']['individual'].isin(r_k_res[k]['CF'][r_k_res[k]['CF'] == 1.0].index.to_list()) &
-                    r_k_res[k]['CSTwi']['StatEvi'] == 'Yes')
-            ),
+                set(r_cstwi[r_cstwi['individual'].isin(r_cf[r_cf == 1].index.to_list()) & (r_cstwi['StatEvi'] == 'Yes')]['individual'].to_list())
+            )
         }
     )
 
