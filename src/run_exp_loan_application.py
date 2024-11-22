@@ -9,11 +9,11 @@ wd = os.path.dirname(os.path.dirname(__file__))
 data_path = os.path.abspath(os.path.join(wd, 'data'))
 resu_path = os.path.abspath(os.path.join(wd, 'results'))
 
-# --- load data
+# load data
 df = pd.read_csv(data_path + '\\LoanApplication_v2.csv', sep='|')
 cf_df = pd.read_csv(data_path + '\\counterfactuals\\cf_LoanApplication_v2.csv', sep='|')
 
-# --- situation testing parameters
+# target feature
 feat_trgt = 'LoanApproval'
 # values for the target feature: use 'positive' and 'negative' accordingly
 feat_trgt_vals = {'positive': 1, 'negative': -1}
@@ -33,12 +33,10 @@ tau = 0.0
 # type of discrimination
 testing_for_negative_disc = True  # TODO
 
-# for percentages of complainants:
-n_pro = df[df[feat_prot] == 1].shape[0]
-
 # for the loop
 test_df = df.copy()
 test_cfdf = cf_df.copy()
+n_pro = df[df[feat_prot] == 1].shape[0]
 k_res_abs = []
 k_res_prc = []
 sigfig = 2
@@ -65,7 +63,7 @@ for k in k_list:
     cst_wi.setup_baseline(test_df, test_cfdf, nominal_atts=['Gender'], continuous_atts=['AnnualSalary', 'AccountBalance'])
     cst_wi.run(target_att=feat_trgt, target_val=feat_trgt_vals, sensitive_att=feat_prot, sensitive_val=feat_prot_vals, include_centers=True, k=k, alpha=alpha, tau=tau)
     cst_wi_td = cst_wi.get_test_discrimination()
-    # it also includes Counterfactual Fairness (CF)
+    # Includes Counterfactual Fairness (CF)
     cf = cst_wi.res_counterfactual_unfairness
     del cst_wi
 
@@ -115,8 +113,8 @@ del k_res_prc
 print(df_k_res_abs)
 print(df_k_res_prc)
 
-df_k_res_abs.to_csv(resu_path + '\\res_LoanApplication.csv', sep='|', index=True)
-df_k_res_prc.to_csv(resu_path + '\\res_LoanApplication.csv', sep='|', index=True, mode='a')
+df_k_res_abs.to_csv(resu_path + '\\res_LoanApplication.csv', sep='|', index=False)
+df_k_res_prc.to_csv(resu_path + '\\res_LoanApplication.csv', sep='|', index=False, mode='a')
 
 #
 # EOF
