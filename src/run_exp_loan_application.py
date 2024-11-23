@@ -24,8 +24,11 @@ feat_prot = 'Gender'
 # values for the protected feature: use 'non_protected' and 'protected' accordingly
 feat_prot_vals = {'non_protected': 0, 'protected': 1}
 
-# k-neighbors
+# k-neighbors: for run experiments
 k_list = [15, 30, 50, 100, 250]
+# k-neighbors: for run k-analysis
+k_l = 1
+k_u = 250
 # significance level
 alpha = 0.05
 # tau deviation
@@ -39,9 +42,13 @@ test_cfdf = cf_df.copy()
 n_pro = df[df[feat_prot] == 1].shape[0]
 k_res_abs = []
 k_res_prc = []
+k_analysis = []
 sigfig = 2
 
+# k-neighbors: for run experiments
 for k in k_list:
+# k-neighbors: for run k-analysis
+# for k in range(k_l, k_u + 1):
     print(k)
 
     # --- Situation Testing (ST)
@@ -83,7 +90,6 @@ for k in k_list:
             'CF_sig': cst_wi_td[cst_wi_td['individual'].isin(cf[cf == 1].index.to_list()) & (cst_wi_td['StatEvi'] == 'Yes')].shape[0]
         }
     )
-
     # --- k's results: percentages
     k_res_prc.append(
         {
@@ -100,21 +106,43 @@ for k in k_list:
             'CF_sig': round(k_res_abs[-1]['CF_sig'] / n_pro * 100, sigfig)
         }
     )
-
+    # --- k-specific analysis
+    k_analysis.append(
+        {
+            'k': k,
+            # Num.: all cases
+            'ST': k_res_abs[-1]['ST'],
+            'CSTwo': k_res_abs[-1]['CSTwo'],
+            'CSTwi': k_res_abs[-1]['CSTwi'],
+            'CF': k_res_abs[-1]['CF'],
+            # Num.: significant cases
+            'ST_sig': k_res_abs[-1]['ST_sig'],
+            'CSTwo_sig': k_res_abs[-1]['CSTwo_sig'],
+            'CSTwi_sig': k_res_abs[-1]['CSTwi_sig'],
+            'CF_sig': k_res_abs[-1]['CF_sig'],
+            # Avg. delta: all cases
+            'ST_diff': st_td[st_td['DiscEvi'] == 'Yes']['delta_p'].mean(),
+            'CSTwo_diff': cst_wo_td[cst_wo_td['DiscEvi'] == 'Yes']['delta_p'].mean(),
+            'CSTwi_diff': cst_wi_td[cst_wi_td['DiscEvi'] == 'Yes']['delta_p'].mean(),
+            # Avg. delta: significant cases
+            'ST_sig_diff': st_td[(st_td['DiscEvi'] == 'Yes') & (st_td['StatEvi'] == 'Yes')]['delta_p'].mean(),
+            'CSTwo_sig_diff': cst_wo_td[(cst_wo_td['DiscEvi'] == 'Yes') & (cst_wo_td['StatEvi'] == 'Yes')]['delta_p'].mean(),
+            'CSTwi_sig_diff': cst_wi_td[(cst_wi_td['DiscEvi'] == 'Yes') & (cst_wi_td['StatEvi'] == 'Yes')]['delta_p'].mean()
+        }
+    )
     del st_td, cst_wo_td, cst_wi_td, cf
-
 print('===== DONE =====')
 
 df_k_res_abs = pd.DataFrame(k_res_abs)
 del k_res_abs
 df_k_res_prc = pd.DataFrame(k_res_prc)
 del k_res_prc
-
-print(df_k_res_abs)
-print(df_k_res_prc)
+df_k_analysis = pd.DataFrame(k_analysis)
+del k_analysis
 
 df_k_res_abs.to_csv(resu_path + '\\res_LoanApplication.csv', sep='|', index=False)
 df_k_res_prc.to_csv(resu_path + '\\res_LoanApplication.csv', sep='|', index=False, mode='a')
+# df_k_analysis.to_csv(resu_path + f'\\res_LoanApplication_k{k_u}_analysis.csv', sep='|', index=True)
 
 #
 # EOF
