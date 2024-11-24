@@ -34,9 +34,19 @@ class SituationTesting:
         self.res_dict_dist_to_neighbors = None
         self.res_counterfactual_unfairness = None
         self.wald_ci = None
+        self.negative = None
 
-    def setup_baseline(self, df: DataFrame, cf_df: DataFrame = None, nominal_atts: List[str] = None,
-                       continuous_atts: List[str] = None, ordinal_atts: List[str] = None, normalize: bool = True):
+    def setup_baseline(
+            self,
+            df: DataFrame,
+            cf_df: DataFrame = None,
+            nominal_atts: List[str] = None,
+            continuous_atts: List[str] = None,
+            ordinal_atts: List[str] = None,
+            normalize: bool = True,
+            negative: bool = True
+    ):
+
         # datasets
         self.df = df
         self.cf_df = cf_df
@@ -64,6 +74,8 @@ class SituationTesting:
             self.df[self.continuous_atts] = scaler.fit_transform(self.df[self.continuous_atts])
             if self.cf_df is not None:
                 self.cf_df[self.continuous_atts] = scaler.fit_transform(self.cf_df[self.continuous_atts])
+        # type of discrimination (negative as default)
+        self.negative = negative
 
     def top_k(self, t, tset, k: int, distance: str, max_d: float = None) -> List[Tuple[float, int]]:
         ds = __DISTANCES__[distance](t, tset, self.relevant_atts, self.all_atts)
@@ -80,24 +92,36 @@ class SituationTesting:
         q = [(-v, i) for v, i in q]
         return sorted(q)
 
-    # TODO: are we using this at all?
-    def run_mul(self, target_att: str, target_val: Dict, sensitive_att: List[str], sensitive_val: List[Dict],
-                k: int,
-                alpha: float = 0.05,
-                tau: float = 0.0,
-                distance: str = 'kdd2011',
-                max_d: float = None,
-                include_centers: bool = None,
-                return_counterfactual_fairness: bool = True) -> DataFrame:
-        res_mul = self.df[[sensitive_att]].copy()
-        for a in range(len(sensitive_att)):
-            res_mul['diff_' + sensitive_att[a]] = self.run(target_att, target_val, sensitive_att[a], sensitive_val[a],
-                                                           k, alpha, tau, distance, max_d, include_centers, False)
-            return res_mul
+    # def run_mul(self, target_att: str, target_val: Dict, sensitive_att: List[str], sensitive_val: List[Dict],
+    #             k: int,
+    #             alpha: float = 0.05,
+    #             tau: float = 0.0,
+    #             distance: str = 'kdd2011',
+    #             max_d: float = None,
+    #             include_centers: bool = None,
+    #             return_counterfactual_fairness: bool = True) -> DataFrame:
+    #     res_mul = self.df[[sensitive_att]].copy()
+    #     for a in range(len(sensitive_att)):
+    #         res_mul['diff_' + sensitive_att[a]] = self.run(
+    #             target_att, target_val, sensitive_att[a], sensitive_val[a], k, alpha, tau, distance, max_d, include_centers, False
+    #         )
+    #         return res_mul
 
-    def run(self, target_att: str, target_val: Dict, sensitive_att: str, sensitive_val: Dict, k: int,
-            alpha: float = 0.05, tau: float = 0.0, distance: str = 'kdd2011', max_d: float = None,
-            include_centers: bool = None, return_counterfactual_fairness: bool = True, sigfig: int = 3):
+    def run(
+            self,
+            target_att: str,
+            target_val: Dict,
+            sensitive_att: str,
+            sensitive_val: Dict,
+            k: int,
+            alpha: float = 0.05,
+            tau: float = 0.0,
+            distance: str = 'kdd2011',
+            max_d: float = None,
+            include_centers: bool = None,
+            return_counterfactual_fairness: bool = True,
+            sigfig: int = 3
+    ):
 
         # when True, include ctr and tst centers in p1 (ctr group) and p2 (tst group) calculations
         self.include_centers = include_centers if include_centers is not None else self.include_centers
@@ -111,7 +135,6 @@ class SituationTesting:
             self.res_counterfactual_unfairness = pd.Series(np.zeros(len(self.df)), index=self.df.index)
         else:
             return_counterfactual_fairness = False
-
         # update relevant attribute list: exclude target and sensitive att(s)
         self.relevant_atts = [att for att in self.relevant_atts if att not in sensitive_att or att == target_att]
         bad_y_val = get_neg_value(target_val)
@@ -167,7 +190,7 @@ class SituationTesting:
                     # discrimination: neg_y to pos_y
                     if self.df.loc[c, target_att] == bad_y_val:
                         self.res_counterfactual_unfairness[c] = 1
-                    # positive discrimination: pos_y to neg_y  TODO: revise this notion | unclear to me
+                    # positive discrimination: pos_y to neg_y
                     if self.df.loc[c, target_att] != bad_y_val:
                         self.res_counterfactual_unfairness[c] = 2
                 else:
@@ -175,14 +198,14 @@ class SituationTesting:
 
         return res_st
 
-    def _test_discrimination(self, ind, p1, p2, k1, k2, alpha, tau, sigfig: int = 3, ngtv_disc: bool = True):
+    def _test_discrimination(self, ind, p1, p2, k1, k2, alpha, tau, sigfig: int = 3):
         # the point estimate
         delta_p = p1 - p2
         # one-sided test: used for ST and CST
         z_score_1 = round(st.norm.ppf(1 - alpha), sigfig)
         d_alpha_1 = z_score_1 * math.sqrt((p1 * (1 - p1) / k1) + (p2 * (1 - p2) / k2))
         # negative discrimination
-        if ngtv_disc:
+        if self.negative:
             # evidence for discrimination?
             if round(delta_p, sigfig) > tau:
                 disc_evi = 'Yes'

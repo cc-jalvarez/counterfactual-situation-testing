@@ -34,7 +34,7 @@ alpha = 0.05
 # tau deviation
 tau = 0.0
 # type of discrimination
-testing_for_negative_disc = True  # TODO
+negative_disc = True
 
 # for the loop
 test_df = df.copy()
@@ -53,25 +53,38 @@ for k in k_list:
 
     # --- Situation Testing (ST)
     st = SituationTesting()
-    st.setup_baseline(test_df, nominal_atts=['Gender'], continuous_atts=['AnnualSalary', 'AccountBalance'])
+    if negative_disc:
+        st.setup_baseline(test_df, nominal_atts=['Gender'], continuous_atts=['AnnualSalary', 'AccountBalance'])
+    else:
+        st.setup_baseline(test_df, nominal_atts=['Gender'], continuous_atts=['AnnualSalary', 'AccountBalance'], negative=False)
     st.run(target_att=feat_trgt, target_val=feat_trgt_vals, sensitive_att=feat_prot, sensitive_val=feat_prot_vals, k=k, alpha=alpha, tau=tau)
     st_td = st.get_test_discrimination()
     del st
 
     # --- Counterfactual Situation Testing without centers (CST wo)
     cst_wo = SituationTesting()
-    cst_wo.setup_baseline(test_df, test_cfdf, nominal_atts=['Gender'], continuous_atts=['AnnualSalary', 'AccountBalance'])
+    if negative_disc:
+        cst_wo.setup_baseline(test_df, test_cfdf, nominal_atts=['Gender'], continuous_atts=['AnnualSalary', 'AccountBalance'])
+    else:
+        cst_wo.setup_baseline(test_df, test_cfdf, nominal_atts=['Gender'], continuous_atts=['AnnualSalary', 'AccountBalance'], negative=False)
     cst_wo.run(target_att=feat_trgt, target_val=feat_trgt_vals, sensitive_att=feat_prot, sensitive_val=feat_prot_vals, include_centers=False, k=k, alpha=alpha, tau=tau)
     cst_wo_td = cst_wo.get_test_discrimination()
     del cst_wo
 
     # --- Counterfactual Situation Testing with centers (CST wi)
     cst_wi = SituationTesting()
-    cst_wi.setup_baseline(test_df, test_cfdf, nominal_atts=['Gender'], continuous_atts=['AnnualSalary', 'AccountBalance'])
+    if negative_disc:
+        cst_wi.setup_baseline(test_df, test_cfdf, nominal_atts=['Gender'], continuous_atts=['AnnualSalary', 'AccountBalance'])
+    else:
+        cst_wi.setup_baseline(test_df, test_cfdf, nominal_atts=['Gender'], continuous_atts=['AnnualSalary', 'AccountBalance'], negative=False)
     cst_wi.run(target_att=feat_trgt, target_val=feat_trgt_vals, sensitive_att=feat_prot, sensitive_val=feat_prot_vals, include_centers=True, k=k, alpha=alpha, tau=tau)
     cst_wi_td = cst_wi.get_test_discrimination()
     # Includes Counterfactual Fairness (CF)
     cf = cst_wi.res_counterfactual_unfairness
+    if negative_disc:
+        cf_cond = cf == 1
+    else:
+        cf_cond = cf == 2
     del cst_wi
 
     # --- k's results: absolutes
@@ -82,12 +95,12 @@ for k in k_list:
             'ST': st_td[st_td['DiscEvi'] == 'Yes'].shape[0],
             'CSTwo': cst_wo_td[cst_wo_td['DiscEvi'] == 'Yes'].shape[0],
             'CSTwi': cst_wi_td[cst_wi_td['DiscEvi'] == 'Yes'].shape[0],
-            'CF': sum(cf == 1),
+            'CF': sum(cf_cond),
             # Num. of discrimination cases that are statistically significant
             'ST_sig': st_td[(st_td['DiscEvi'] == 'Yes') & (st_td['StatEvi'] == 'Yes')].shape[0],
             'CSTwo_sig': cst_wo_td[(cst_wo_td['DiscEvi'] == 'Yes') & (cst_wo_td['StatEvi'] == 'Yes')].shape[0],
             'CSTwi_sig': cst_wi_td[(cst_wi_td['DiscEvi'] == 'Yes') & (cst_wi_td['StatEvi'] == 'Yes')].shape[0],
-            'CF_sig': cst_wi_td[cst_wi_td['individual'].isin(cf[cf == 1].index.to_list()) & (cst_wi_td['StatEvi'] == 'Yes')].shape[0]
+            'CF_sig': cst_wi_td[cst_wi_td['individual'].isin(cf[cf_cond].index.to_list()) & (cst_wi_td['StatEvi'] == 'Yes')].shape[0]
         }
     )
     # --- k's results: percentages
@@ -140,8 +153,12 @@ del k_res_prc
 df_k_analysis = pd.DataFrame(k_analysis)
 del k_analysis
 
-df_k_res_abs.to_csv(resu_path + '\\res_LoanApplication.csv', sep='|', index=False)
-df_k_res_prc.to_csv(resu_path + '\\res_LoanApplication.csv', sep='|', index=False, mode='a')
+if negative_disc:
+    df_k_res_abs.to_csv(resu_path + '\\res_LoanApplication.csv', sep='|', index=False)
+    df_k_res_prc.to_csv(resu_path + '\\res_LoanApplication.csv', sep='|', index=False, mode='a')
+else:
+    df_k_res_abs.to_csv(resu_path + '\\res_pos_LoanApplication.csv', sep='|', index=False)
+    df_k_res_prc.to_csv(resu_path + '\\res_pos_LoanApplication.csv', sep='|', index=False, mode='a')
 # df_k_analysis.to_csv(resu_path + f'\\res_LoanApplication_k{k_u}_analysis.csv', sep='|', index=True)
 
 #
