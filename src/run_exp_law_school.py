@@ -30,10 +30,8 @@ k_list = [15, 30, 50, 100, 250]
 alpha = 0.05
 # tau deviation
 tau = 0.0
-# type of discrimination
-testing_for_negative_disc = True  # TODO
 
-# shared features/params for all runs
+# shared for all runs
 feat_trgt = 'Y'
 feat_trgt_vals = {'positive': 1, 'negative': 0}
 feat_rlvt = ['LSAT', 'UGPA']
