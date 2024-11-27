@@ -114,7 +114,6 @@ for k in k_list:
             'CF_sig': cst_wi_td[cst_wi_td['individual'].isin(cf[cf == 1].index.to_list()) & (cst_wi_td['StatEvi'] == 'Yes')].shape[0]
         }
     )
-
     # --- k's results: percentages
     k_res_prc.append(
         {
@@ -131,6 +130,7 @@ for k in k_list:
             'CF_sig': round(k_res_abs[-1]['CF_sig'] / n_pro * 100, sigfig)
         }
     )
+    # TODO: repost num. of disc cases and delta p
 
     del st_td, cst_wo_td, cst_wi_td, cf
 print('===== DONE =====')
@@ -224,7 +224,6 @@ for k in k_list:
             'CF_sig': cst_wi_td[cst_wi_td['individual'].isin(cf[cf == 1].index.to_list()) & (cst_wi_td['StatEvi'] == 'Yes')].shape[0]
         }
     )
-
     # --- k's results: percentages
     k_res_prc.append(
         {
@@ -241,6 +240,7 @@ for k in k_list:
             'CF_sig': round(k_res_abs[-1]['CF_sig'] / n_pro * 100, sigfig)
         }
     )
+    # TODO: repost num. of disc cases and delta p
 
     del st_td, cst_wo_td, cst_wi_td, cf
 print('===== DONE =====')
@@ -315,13 +315,14 @@ for k in k_list:
                 set(r_cstwi[(r_cstwi['DiscEvi'] == 'Yes') & (r_cstwi['StatEvi'] == 'Yes')]['individual'].to_list())
             ),
             'CF_sig': len(
-                set(g_cstwi[g_cstwi['individual'].isin(g_cf[g_cf == 1].index.to_list()) & (g_cstwi['StatEvi'] == 'Yes')]['individual'].to_list())
+                set(g_cstwi[g_cstwi['individual'].isin(g_cf[g_cf == 1].index.to_list()) &
+                            (g_cstwi['StatEvi'] == 'Yes')]['individual'].to_list())
                 &
-                set(r_cstwi[r_cstwi['individual'].isin(r_cf[r_cf == 1].index.to_list()) & (r_cstwi['StatEvi'] == 'Yes')]['individual'].to_list())
+                set(r_cstwi[r_cstwi['individual'].isin(r_cf[r_cf == 1].index.to_list()) &
+                            (r_cstwi['StatEvi'] == 'Yes')]['individual'].to_list())
             )
         }
     )
-
     # --- k's results: percentages
     k_res_prc.append(
         {
@@ -338,6 +339,7 @@ for k in k_list:
             'CF_sig': round(k_res_abs[-1]['CF_sig'] / n_pro * 100, sigfig)
         }
     )
+    # TODO: repost num. of disc cases and delta p (for latter, look at the intersect!!!)
 
 print('===== DONE =====')
 del g_k_res, r_k_res
@@ -426,7 +428,6 @@ for k in k_list:
             'CF_sig': cst_wi_td[cst_wi_td['individual'].isin(cf[cf == 1].index.to_list()) & (cst_wi_td['StatEvi'] == 'Yes')].shape[0]
         }
     )
-
     # --- k's results: percentages
     k_res_prc.append(
         {
@@ -443,6 +444,7 @@ for k in k_list:
             'CF_sig': round(k_res_abs[-1]['CF_sig'] / n_pro * 100, sigfig)
         }
     )
+    # TODO: repost num. of disc cases and delta p
 
     del st_td, cst_wo_td, cst_wi_td, cf
 print('===== DONE =====')
