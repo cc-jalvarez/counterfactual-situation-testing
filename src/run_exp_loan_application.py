@@ -114,30 +114,6 @@ for k in k_list:
             'CF_sig': round(k_res_abs[-1]['CF_sig'] / n_pro * 100, sigfig)
         }
     )
-    # # --- k-specific analysis
-    # k_analysis.append(
-    #     {
-    #         'k': k,
-    #         # Num.: all cases
-    #         'ST': k_res_abs[-1]['ST'],
-    #         'CSTwo': k_res_abs[-1]['CSTwo'],
-    #         'CSTwi': k_res_abs[-1]['CSTwi'],
-    #         'CF': k_res_abs[-1]['CF'],
-    #         # Num.: significant cases
-    #         'ST_sig': k_res_abs[-1]['ST_sig'],
-    #         'CSTwo_sig': k_res_abs[-1]['CSTwo_sig'],
-    #         'CSTwi_sig': k_res_abs[-1]['CSTwi_sig'],
-    #         'CF_sig': k_res_abs[-1]['CF_sig'],
-    #         # Avg. delta: all cases
-    #         'ST_diff': st_td[st_td['DiscEvi'] == 'Yes']['delta_p'].mean(),
-    #         'CSTwo_diff': cst_wo_td[cst_wo_td['DiscEvi'] == 'Yes']['delta_p'].mean(),
-    #         'CSTwi_diff': cst_wi_td[cst_wi_td['DiscEvi'] == 'Yes']['delta_p'].mean(),
-    #         # Avg. delta: significant cases
-    #         'ST_sig_diff': st_td[(st_td['DiscEvi'] == 'Yes') & (st_td['StatEvi'] == 'Yes')]['delta_p'].mean(),
-    #         'CSTwo_sig_diff': cst_wo_td[(cst_wo_td['DiscEvi'] == 'Yes') & (cst_wo_td['StatEvi'] == 'Yes')]['delta_p'].mean(),
-    #         'CSTwi_sig_diff': cst_wi_td[(cst_wi_td['DiscEvi'] == 'Yes') & (cst_wi_td['StatEvi'] == 'Yes')]['delta_p'].mean()
-    #     }
-    # )
     del st_td, cst_wo_td, cst_wi_td, cf
 print('===== DONE =====')
 
@@ -145,8 +121,6 @@ df_k_res_abs = pd.DataFrame(k_res_abs)
 del k_res_abs
 df_k_res_prc = pd.DataFrame(k_res_prc)
 del k_res_prc
-df_k_analysis = pd.DataFrame(k_analysis)
-del k_analysis
 
 if negative_disc:
     df_k_res_abs.to_csv(resu_path + '\\res_LoanApplication.csv', sep='|', index=False)
