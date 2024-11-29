@@ -50,8 +50,7 @@ cf_df = cf_df.rename(columns={'Sex': 'Gender', 'scf_LSAT': 'LSAT', 'scf_UGPA': '
 # protected feature
 feat_prot = 'Gender'
 # values for the protected feature: use 'non_protected' and 'protected'
-feat_prot_vals = {'non_protected': 'Male',
-                  'protected': 'Female'}
+feat_prot_vals = {'non_protected': 'Male', 'protected': 'Female'}
 
 # add the target feature's counterfactual
 cf_df['Score'] = b1*cf_df['UGPA'] + b2*cf_df['LSAT']
@@ -111,7 +110,15 @@ for k in k_list:
             'ST_sig': st_td[(st_td['DiscEvi'] == 'Yes') & (st_td['StatEvi'] == 'Yes')].shape[0],
             'CSTwo_sig': cst_wo_td[(cst_wo_td['DiscEvi'] == 'Yes') & (cst_wo_td['StatEvi'] == 'Yes')].shape[0],
             'CSTwi_sig': cst_wi_td[(cst_wi_td['DiscEvi'] == 'Yes') & (cst_wi_td['StatEvi'] == 'Yes')].shape[0],
-            'CF_sig': cst_wi_td[cst_wi_td['individual'].isin(cf[cf == 1].index.to_list()) & (cst_wi_td['StatEvi'] == 'Yes')].shape[0]
+            'CF_sig': cst_wi_td[cst_wi_td['individual'].isin(cf[cf == 1].index.to_list()) & (cst_wi_td['StatEvi'] == 'Yes')].shape[0],
+            # Avg. delta (all)
+            'ST_delta': st_td[st_td['DiscEvi'] == 'Yes']['delta_p'].mean(),
+            'CSTwo_delta': cst_wo_td[cst_wo_td['DiscEvi'] == 'Yes']['delta_p'].mean(),
+            'CSTwi_delta': cst_wi_td[cst_wi_td['DiscEvi'] == 'Yes']['delta_p'].mean(),
+            # Avg. delta (significant)
+            'ST_delta_sig': st_td[(st_td['DiscEvi'] == 'Yes') & (st_td['StatEvi'] == 'Yes')]['delta_p'].mean(),
+            'CSTwo_delta_sig': cst_wo_td[(cst_wo_td['DiscEvi'] == 'Yes') & (cst_wo_td['StatEvi'] == 'Yes')]['delta_p'].mean(),
+            'CSTwi_delta_sig': cst_wi_td[(cst_wi_td['DiscEvi'] == 'Yes') & (cst_wi_td['StatEvi'] == 'Yes')]['delta_p'].mean(),
         }
     )
     # --- k's results: percentages
@@ -130,8 +137,6 @@ for k in k_list:
             'CF_sig': round(k_res_abs[-1]['CF_sig'] / n_pro * 100, sigfig)
         }
     )
-    # TODO: repost num. of disc cases and delta p
-
     del st_td, cst_wo_td, cst_wi_td, cf
 print('===== DONE =====')
 
@@ -164,8 +169,7 @@ cf_df['Y'] = np.where(cf_df['Score'] >= min_score, 1, 0)
 # protected feature
 feat_prot = 'Race'
 # values for the protected feature: use 'non_protected' and 'protected' accordingly
-feat_prot_vals = {'non_protected': 'White',
-                  'protected': 'NonWhite'}
+feat_prot_vals = {'non_protected': 'White', 'protected': 'NonWhite'}
 
 # for the loop
 test_df = df.copy()
@@ -221,7 +225,15 @@ for k in k_list:
             'ST_sig': st_td[(st_td['DiscEvi'] == 'Yes') & (st_td['StatEvi'] == 'Yes')].shape[0],
             'CSTwo_sig': cst_wo_td[(cst_wo_td['DiscEvi'] == 'Yes') & (cst_wo_td['StatEvi'] == 'Yes')].shape[0],
             'CSTwi_sig': cst_wi_td[(cst_wi_td['DiscEvi'] == 'Yes') & (cst_wi_td['StatEvi'] == 'Yes')].shape[0],
-            'CF_sig': cst_wi_td[cst_wi_td['individual'].isin(cf[cf == 1].index.to_list()) & (cst_wi_td['StatEvi'] == 'Yes')].shape[0]
+            'CF_sig': cst_wi_td[cst_wi_td['individual'].isin(cf[cf == 1].index.to_list()) & (cst_wi_td['StatEvi'] == 'Yes')].shape[0],
+            # Avg. delta (all)
+            'ST_delta': st_td[st_td['DiscEvi'] == 'Yes']['delta_p'].mean(),
+            'CSTwo_delta': cst_wo_td[cst_wo_td['DiscEvi'] == 'Yes']['delta_p'].mean(),
+            'CSTwi_delta': cst_wi_td[cst_wi_td['DiscEvi'] == 'Yes']['delta_p'].mean(),
+            # Avg. delta (significant)
+            'ST_delta_sig': st_td[(st_td['DiscEvi'] == 'Yes') & (st_td['StatEvi'] == 'Yes')]['delta_p'].mean(),
+            'CSTwo_delta_sig': cst_wo_td[(cst_wo_td['DiscEvi'] == 'Yes') & (cst_wo_td['StatEvi'] == 'Yes')]['delta_p'].mean(),
+            'CSTwi_delta_sig': cst_wi_td[(cst_wi_td['DiscEvi'] == 'Yes') & (cst_wi_td['StatEvi'] == 'Yes')]['delta_p'].mean(),
         }
     )
     # --- k's results: percentages
@@ -240,8 +252,6 @@ for k in k_list:
             'CF_sig': round(k_res_abs[-1]['CF_sig'] / n_pro * 100, sigfig)
         }
     )
-    # TODO: repost num. of disc cases and delta p
-
     del st_td, cst_wo_td, cst_wi_td, cf
 print('===== DONE =====')
 
@@ -283,6 +293,25 @@ for k in k_list:
     g_cf = g_k_res[k]['CF']
     r_cf = r_k_res[k]['CF']
 
+    # create temporary DFs for avg. delta TODO could use them Num. (temp.shape[0])
+    temp_st = pd.merge(
+        g_st[g_st['DiscEvi'] == 'Yes'], r_st[r_st['DiscEvi'] == 'Yes'], how='inner', on='individual'
+    )
+    temp_cstwo = pd.merge(
+        g_cstwo[g_cstwo['DiscEvi'] == 'Yes'], r_cstwo[r_cstwo['DiscEvi'] == 'Yes'], how='inner', on='individual'
+    )
+    temp_cstwi = pd.merge(
+        g_cstwi[g_cstwi['DiscEvi'] == 'Yes'], r_cstwi[r_cstwi['DiscEvi'] == 'Yes'], how='inner', on='individual'
+    )
+    temp_st_sig = pd.merge(
+        g_st[(g_st['DiscEvi'] == 'Yes') & (g_st['StatEvi'] == 'Yes')], r_st[(r_st['DiscEvi'] == 'Yes') & (r_st['StatEvi'] == 'Yes')], how='inner', on='individual'
+    )
+    temp_cstwo_sig = pd.merge(
+        g_cstwo[(g_cstwo['DiscEvi'] == 'Yes') & (g_cstwo['StatEvi'] == 'Yes')], r_cstwo[(r_cstwo['DiscEvi'] == 'Yes') & (r_cstwo['StatEvi'] == 'Yes')], how='inner', on='individual'
+    )
+    temp_cstwi_sig = pd.merge(
+        g_cstwi[(g_cstwi['DiscEvi'] == 'Yes') & (g_cstwi['StatEvi'] == 'Yes')], r_cstwi[(r_cstwi['DiscEvi'] == 'Yes') & (r_cstwi['StatEvi'] == 'Yes')], how='inner', on='individual'
+    )
     # --- k's results: absolutes
     k_res_abs.append(
         {
@@ -320,7 +349,15 @@ for k in k_list:
                 &
                 set(r_cstwi[r_cstwi['individual'].isin(r_cf[r_cf == 1].index.to_list()) &
                             (r_cstwi['StatEvi'] == 'Yes')]['individual'].to_list())
-            )
+            ),
+            # Avg. delta (all)
+            'ST_delta': ((temp_st['delta_p_x'] + temp_st['delta_p_y']) / 2).mean(),
+            'CSTwo_delta': ((temp_cstwo['delta_p_x'] + temp_cstwo['delta_p_y']) / 2).mean(),
+            'CSTwi_delta': ((temp_cstwi['delta_p_x'] + temp_cstwi['delta_p_y']) / 2).mean(),
+            # Avg. delta (significant)
+            'ST_delta_sig': ((temp_st_sig['delta_p_x'] + temp_st_sig['delta_p_y']) / 2).mean(),
+            'CSTwo_delta_sig': ((temp_cstwo_sig['delta_p_x'] + temp_cstwo_sig['delta_p_y']) / 2).mean(),
+            'CSTwi_delta_sig': ((temp_cstwi_sig['delta_p_x'] + temp_cstwi_sig['delta_p_y']) / 2).mean(),
         }
     )
     # --- k's results: percentages
@@ -339,10 +376,9 @@ for k in k_list:
             'CF_sig': round(k_res_abs[-1]['CF_sig'] / n_pro * 100, sigfig)
         }
     )
-    # TODO: repost num. of disc cases and delta p (for latter, look at the intersect!!!)
-
-print('===== DONE =====')
+    del temp_st, temp_st_sig, temp_cstwo, temp_cstwo_sig, temp_cstwi, temp_cstwi_sig
 del g_k_res, r_k_res
+print('===== DONE =====')
 
 df_k_res_abs = pd.DataFrame(k_res_abs)
 del k_res_abs
@@ -425,7 +461,15 @@ for k in k_list:
             'ST_sig': st_td[(st_td['DiscEvi'] == 'Yes') & (st_td['StatEvi'] == 'Yes')].shape[0],
             'CSTwo_sig': cst_wo_td[(cst_wo_td['DiscEvi'] == 'Yes') & (cst_wo_td['StatEvi'] == 'Yes')].shape[0],
             'CSTwi_sig': cst_wi_td[(cst_wi_td['DiscEvi'] == 'Yes') & (cst_wi_td['StatEvi'] == 'Yes')].shape[0],
-            'CF_sig': cst_wi_td[cst_wi_td['individual'].isin(cf[cf == 1].index.to_list()) & (cst_wi_td['StatEvi'] == 'Yes')].shape[0]
+            'CF_sig': cst_wi_td[cst_wi_td['individual'].isin(cf[cf == 1].index.to_list()) & (cst_wi_td['StatEvi'] == 'Yes')].shape[0],
+            # Avg. delta (all)
+            'ST_delta': st_td[st_td['DiscEvi'] == 'Yes']['delta_p'].mean(),
+            'CSTwo_delta': cst_wo_td[cst_wo_td['DiscEvi'] == 'Yes']['delta_p'].mean(),
+            'CSTwi_delta': cst_wi_td[cst_wi_td['DiscEvi'] == 'Yes']['delta_p'].mean(),
+            # Avg. delta (significant)
+            'ST_delta_sig': st_td[(st_td['DiscEvi'] == 'Yes') & (st_td['StatEvi'] == 'Yes')]['delta_p'].mean(),
+            'CSTwo_delta_sig': cst_wo_td[(cst_wo_td['DiscEvi'] == 'Yes') & (cst_wo_td['StatEvi'] == 'Yes')]['delta_p'].mean(),
+            'CSTwi_delta_sig': cst_wi_td[(cst_wi_td['DiscEvi'] == 'Yes') & (cst_wi_td['StatEvi'] == 'Yes')]['delta_p'].mean(),
         }
     )
     # --- k's results: percentages
@@ -444,8 +488,6 @@ for k in k_list:
             'CF_sig': round(k_res_abs[-1]['CF_sig'] / n_pro * 100, sigfig)
         }
     )
-    # TODO: repost num. of disc cases and delta p
-
     del st_td, cst_wo_td, cst_wi_td, cf
 print('===== DONE =====')
 
