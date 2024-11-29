@@ -25,7 +25,7 @@ df['Score'] = b1*df['UGPA'] + b2*df['LSAT']
 df['Y'] = np.where(df['Score'] >= min_score, 1, 0)
 
 # k-neighbors
-k_list = [15, 30, 50, 100, 250]
+k_list = [15] #, 30, 50, 100, 250]
 # significance level
 alpha = 0.05
 # tau deviation
@@ -148,8 +148,8 @@ del k_res_prc
 print(df_k_res_abs)
 print(df_k_res_prc)
 
-df_k_res_abs.to_csv(resu_path + f'\\res_{do}_LawSchool.csv', sep='|', index=False)
-df_k_res_prc.to_csv(resu_path + f'\\res_{do}_LawSchool.csv', sep='|', index=False, mode='a')
+df_k_res_abs.to_csv(resu_path + f'\\res_LawSchool_{do}_abs.csv', sep='|', index=False)
+df_k_res_prc.to_csv(resu_path + f'\\res_LawSchool_{do}_prc.csv', sep='|', index=False)
 del df_k_res_abs, df_k_res_prc
 
 print('###############################################################################################################')
@@ -263,8 +263,8 @@ del k_res_prc
 print(df_k_res_abs)
 print(df_k_res_prc)
 
-df_k_res_abs.to_csv(resu_path + f'\\res_{do}_LawSchool.csv', sep='|', index=False)
-df_k_res_prc.to_csv(resu_path + f'\\res_{do}_LawSchool.csv', sep='|', index=False, mode='a')
+df_k_res_abs.to_csv(resu_path + f'\\res_LawSchool_{do}_abs.csv', sep='|', index=False)
+df_k_res_prc.to_csv(resu_path + f'\\res_LawSchool_{do}_prc.csv', sep='|', index=False)
 del df_k_res_abs, df_k_res_prc
 
 print('###############################################################################################################')
@@ -388,8 +388,8 @@ del k_res_prc
 print(df_k_res_abs)
 print(df_k_res_prc)
 
-df_k_res_abs.to_csv(resu_path + f'\\res_Multiple_LawSchool.csv', sep='|', index=False)
-df_k_res_prc.to_csv(resu_path + f'\\res_Multiple_LawSchool.csv', sep='|', index=False, mode='a')
+df_k_res_abs.to_csv(resu_path + f'\\res_LawSchool_Multiple_abs.csv', sep='|', index=False)
+df_k_res_prc.to_csv(resu_path + f'\\res_LawSchool_Multiple_prc.csv', sep='|', index=False)
 del df_k_res_abs, df_k_res_prc
 
 print('###############################################################################################################')
@@ -499,8 +499,8 @@ del k_res_prc
 print(df_k_res_abs)
 print(df_k_res_prc)
 
-df_k_res_abs.to_csv(resu_path + f'\\res_{do}_LawSchool.csv', sep='|', index=False)
-df_k_res_prc.to_csv(resu_path + f'\\res_{do}_LawSchool.csv', sep='|', index=False, mode='a')
+df_k_res_abs.to_csv(resu_path + f'\\res_LawSchool_{do}_abs.csv', sep='|', index=False)
+df_k_res_prc.to_csv(resu_path + f'\\res_LawSchool_{do}_prc.csv', sep='|', index=False)
 del df_k_res_abs, df_k_res_prc
 
 #

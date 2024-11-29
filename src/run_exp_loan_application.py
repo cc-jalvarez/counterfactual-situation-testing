@@ -126,8 +126,8 @@ if negative_disc:
     df_k_res_abs.to_csv(resu_path + '\\res_LoanApplication.csv', sep='|', index=False)
     df_k_res_prc.to_csv(resu_path + '\\res_LoanApplication.csv', sep='|', index=False, mode='a')
 else:
-    df_k_res_abs.to_csv(resu_path + '\\res_pos_LoanApplication.csv', sep='|', index=False)
-    df_k_res_prc.to_csv(resu_path + '\\res_pos_LoanApplication.csv', sep='|', index=False, mode='a')
+    df_k_res_abs.to_csv(resu_path + '\\res_LoanApplication_positive.csv', sep='|', index=False)
+    df_k_res_prc.to_csv(resu_path + '\\res_LoanApplication_positive.csv', sep='|', index=False, mode='a')
 
 #
 # EOF
