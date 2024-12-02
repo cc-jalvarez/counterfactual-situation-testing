@@ -25,7 +25,8 @@ df['Score'] = b1*df['UGPA'] + b2*df['LSAT']
 df['Y'] = np.where(df['Score'] >= min_score, 1, 0)
 
 # k-neighbors
-k_list = [15] #, 30, 50, 100, 250]
+# k_list = [15, 30, 50, 100, 250]
+k_list = [1, 15, 30] + list(range(50, 501, 10))  # list(range(1, 501))
 # significance level
 alpha = 0.05
 # tau deviation
