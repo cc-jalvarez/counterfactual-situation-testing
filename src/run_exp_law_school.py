@@ -277,6 +277,8 @@ n_pro = org_df[(org_df['sex'] == 'Female') & (org_df['race_nonwhite'] == 'NonWhi
 k_res_abs = []
 k_res_prc = []
 
+# TODO: adjust the one-sided CIs using the \alpha/m correction and update the StatEvi columns
+
 for k in k_list:
     print(k)
 
@@ -428,21 +430,21 @@ for k in k_list:
 
     # --- Situation Testing (ST)
     st = SituationTesting()
-    st.setup_baseline(test_df, nominal_atts=['Gender'], continuous_atts=['LSAT', 'UGPA'])
+    st.setup_baseline(test_df, nominal_atts=['GenderRace'], continuous_atts=['LSAT', 'UGPA'])
     st.run(target_att=feat_trgt, target_val=feat_trgt_vals, sensitive_att=feat_prot, sensitive_val=feat_prot_vals, k=k, alpha=alpha, tau=tau)
     st_td = st.get_test_discrimination()
     del st
 
     # --- Counterfactual Situation Testing without centers (CST wo)
     cst_wo = SituationTesting()
-    cst_wo.setup_baseline(test_df, test_cfdf, nominal_atts=['Gender'], continuous_atts=['LSAT', 'UGPA'])
+    cst_wo.setup_baseline(test_df, test_cfdf, nominal_atts=['GenderRace'], continuous_atts=['LSAT', 'UGPA'])
     cst_wo.run(target_att=feat_trgt, target_val=feat_trgt_vals, sensitive_att=feat_prot, sensitive_val=feat_prot_vals, include_centers=False, k=k, alpha=alpha, tau=tau)
     cst_wo_td = cst_wo.get_test_discrimination()
     del cst_wo
 
     # --- Counterfactual Situation Testing with centers (CST wi)
     cst_wi = SituationTesting()
-    cst_wi.setup_baseline(test_df, test_cfdf, nominal_atts=['Gender'], continuous_atts=['LSAT', 'UGPA'])
+    cst_wi.setup_baseline(test_df, test_cfdf, nominal_atts=['GenderRace'], continuous_atts=['LSAT', 'UGPA'])
     cst_wi.run(target_att=feat_trgt, target_val=feat_trgt_vals, sensitive_att=feat_prot, sensitive_val=feat_prot_vals, include_centers=True, k=k, alpha=alpha, tau=tau)
     cst_wi_td = cst_wi.get_test_discrimination()
     # Includes Counterfactual Fairness (CF)
