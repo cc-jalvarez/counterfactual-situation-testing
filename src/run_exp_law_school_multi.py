@@ -386,9 +386,6 @@ del k_res_abs
 df_k_res_prc = pd.DataFrame(k_res_prc)
 del k_res_prc
 
-print(df_k_res_abs)
-print(df_k_res_prc)
-
 df_k_res_abs.to_csv(resu_path + f'\\res_LawSchool_Multiple_abs.csv', sep='|', index=False)
 df_k_res_prc.to_csv(resu_path + f'\\res_LawSchool_Multiple_prc.csv', sep='|', index=False)
 del df_k_res_abs, df_k_res_prc

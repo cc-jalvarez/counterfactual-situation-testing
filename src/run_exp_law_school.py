@@ -146,9 +146,6 @@ del k_res_abs
 df_k_res_prc = pd.DataFrame(k_res_prc)
 del k_res_prc
 
-print(df_k_res_abs)
-print(df_k_res_prc)
-
 df_k_res_abs.to_csv(resu_path + f'\\res_LawSchool_{do}_abs.csv', sep='|', index=False)
 df_k_res_prc.to_csv(resu_path + f'\\res_LawSchool_{do}_prc.csv', sep='|', index=False)
 del df_k_res_abs, df_k_res_prc
@@ -260,9 +257,6 @@ df_k_res_abs = pd.DataFrame(k_res_abs)
 del k_res_abs
 df_k_res_prc = pd.DataFrame(k_res_prc)
 del k_res_prc
-
-print(df_k_res_abs)
-print(df_k_res_prc)
 
 df_k_res_abs.to_csv(resu_path + f'\\res_LawSchool_{do}_abs.csv', sep='|', index=False)
 df_k_res_prc.to_csv(resu_path + f'\\res_LawSchool_{do}_prc.csv', sep='|', index=False)
@@ -496,9 +490,6 @@ df_k_res_abs = pd.DataFrame(k_res_abs)
 del k_res_abs
 df_k_res_prc = pd.DataFrame(k_res_prc)
 del k_res_prc
-
-print(df_k_res_abs)
-print(df_k_res_prc)
 
 df_k_res_abs.to_csv(resu_path + f'\\res_LawSchool_{do}_abs.csv', sep='|', index=False)
 df_k_res_prc.to_csv(resu_path + f'\\res_LawSchool_{do}_prc.csv', sep='|', index=False)
