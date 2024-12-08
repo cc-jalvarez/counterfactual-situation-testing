@@ -97,61 +97,8 @@ for k in k_list:
     del cst_wi
     g_k_res[k]['CSTwi'] = cst_wi_td
     g_k_res[k]['CF'] = cf
-
-    # # --- k's results: absolutes
-    # k_res_abs.append(
-    #     {
-    #         'k': k,
-    #         # Num. of discrimination cases
-    #         'ST': st_td[st_td['DiscEvi'] == 'Yes'].shape[0],
-    #         'CSTwo': cst_wo_td[cst_wo_td['DiscEvi'] == 'Yes'].shape[0],
-    #         'CSTwi': cst_wi_td[cst_wi_td['DiscEvi'] == 'Yes'].shape[0],
-    #         'CF': sum(cf == 1),
-    #         # Num. of discrimination cases that are statistically significant
-    #         'ST_sig': st_td[(st_td['DiscEvi'] == 'Yes') & (st_td['StatEvi'] == 'Yes')].shape[0],
-    #         'CSTwo_sig': cst_wo_td[(cst_wo_td['DiscEvi'] == 'Yes') & (cst_wo_td['StatEvi'] == 'Yes')].shape[0],
-    #         'CSTwi_sig': cst_wi_td[(cst_wi_td['DiscEvi'] == 'Yes') & (cst_wi_td['StatEvi'] == 'Yes')].shape[0],
-    #         'CF_sig': cst_wi_td[cst_wi_td['individual'].isin(cf[cf == 1].index.to_list()) & (cst_wi_td['StatEvi'] == 'Yes')].shape[0],
-    #         # Avg. delta (all)
-    #         'ST_delta': st_td[st_td['DiscEvi'] == 'Yes']['delta_p'].mean(),
-    #         'CSTwo_delta': cst_wo_td[cst_wo_td['DiscEvi'] == 'Yes']['delta_p'].mean(),
-    #         'CSTwi_delta': cst_wi_td[cst_wi_td['DiscEvi'] == 'Yes']['delta_p'].mean(),
-    #         # Avg. delta (significant)
-    #         'ST_delta_sig': st_td[(st_td['DiscEvi'] == 'Yes') & (st_td['StatEvi'] == 'Yes')]['delta_p'].mean(),
-    #         'CSTwo_delta_sig': cst_wo_td[(cst_wo_td['DiscEvi'] == 'Yes') & (cst_wo_td['StatEvi'] == 'Yes')]['delta_p'].mean(),
-    #         'CSTwi_delta_sig': cst_wi_td[(cst_wi_td['DiscEvi'] == 'Yes') & (cst_wi_td['StatEvi'] == 'Yes')]['delta_p'].mean(),
-    #     }
-    # )
-    # # --- k's results: percentages
-    # k_res_prc.append(
-    #     {
-    #         'k': k,
-    #         # % of discrimination cases
-    #         'ST': round(k_res_abs[-1]['ST'] / n_pro * 100, sigfig),
-    #         'CSTwo': round(k_res_abs[-1]['CSTwo'] / n_pro * 100, sigfig),
-    #         'CSTwi': round(k_res_abs[-1]['CSTwi'] / n_pro * 100, sigfig),
-    #         'CF': round(k_res_abs[-1]['CF'] / n_pro * 100, sigfig),
-    #         # % of discrimination cases that are statistically significant
-    #         'ST_sig': round(k_res_abs[-1]['ST_sig'] / n_pro * 100, sigfig),
-    #         'CSTwo_sig': round(k_res_abs[-1]['CSTwo_sig'] / n_pro * 100, sigfig),
-    #         'CSTwi_sig': round(k_res_abs[-1]['CSTwi_sig'] / n_pro * 100, sigfig),
-    #         'CF_sig': round(k_res_abs[-1]['CF_sig'] / n_pro * 100, sigfig)
-    #     }
-    # )
     del st_td, cst_wo_td, cst_wi_td, cf
 print('===== DONE =====')
-
-# df_k_res_abs = pd.DataFrame(k_res_abs)
-# del k_res_abs
-# df_k_res_prc = pd.DataFrame(k_res_prc)
-# del k_res_prc
-#
-# print(df_k_res_abs)
-# print(df_k_res_prc)
-#
-# df_k_res_abs.to_csv(resu_path + f'\\res_LawSchool_{do}_abs.csv', sep='|', index=False)
-# df_k_res_prc.to_csv(resu_path + f'\\res_LawSchool_{do}_prc.csv', sep='|', index=False)
-# del df_k_res_abs, df_k_res_prc
 
 print('###############################################################################################################')
 print('# Single discrimination: do(Race:= White)')
@@ -212,61 +159,8 @@ for k in k_list:
     del cst_wi
     r_k_res[k]['CSTwi'] = cst_wi_td
     r_k_res[k]['CF'] = cf
-
-    # # --- k's results: absolutes
-    # k_res_abs.append(
-    #     {
-    #         'k': k,
-    #         # Num. of discrimination cases
-    #         'ST': st_td[st_td['DiscEvi'] == 'Yes'].shape[0],
-    #         'CSTwo': cst_wo_td[cst_wo_td['DiscEvi'] == 'Yes'].shape[0],
-    #         'CSTwi': cst_wi_td[cst_wi_td['DiscEvi'] == 'Yes'].shape[0],
-    #         'CF': sum(cf == 1),
-    #         # Num. of discrimination cases that are statistically significant
-    #         'ST_sig': st_td[(st_td['DiscEvi'] == 'Yes') & (st_td['StatEvi'] == 'Yes')].shape[0],
-    #         'CSTwo_sig': cst_wo_td[(cst_wo_td['DiscEvi'] == 'Yes') & (cst_wo_td['StatEvi'] == 'Yes')].shape[0],
-    #         'CSTwi_sig': cst_wi_td[(cst_wi_td['DiscEvi'] == 'Yes') & (cst_wi_td['StatEvi'] == 'Yes')].shape[0],
-    #         'CF_sig': cst_wi_td[cst_wi_td['individual'].isin(cf[cf == 1].index.to_list()) & (cst_wi_td['StatEvi'] == 'Yes')].shape[0],
-    #         # Avg. delta (all)
-    #         'ST_delta': st_td[st_td['DiscEvi'] == 'Yes']['delta_p'].mean(),
-    #         'CSTwo_delta': cst_wo_td[cst_wo_td['DiscEvi'] == 'Yes']['delta_p'].mean(),
-    #         'CSTwi_delta': cst_wi_td[cst_wi_td['DiscEvi'] == 'Yes']['delta_p'].mean(),
-    #         # Avg. delta (significant)
-    #         'ST_delta_sig': st_td[(st_td['DiscEvi'] == 'Yes') & (st_td['StatEvi'] == 'Yes')]['delta_p'].mean(),
-    #         'CSTwo_delta_sig': cst_wo_td[(cst_wo_td['DiscEvi'] == 'Yes') & (cst_wo_td['StatEvi'] == 'Yes')]['delta_p'].mean(),
-    #         'CSTwi_delta_sig': cst_wi_td[(cst_wi_td['DiscEvi'] == 'Yes') & (cst_wi_td['StatEvi'] == 'Yes')]['delta_p'].mean(),
-    #     }
-    # )
-    # # --- k's results: percentages
-    # k_res_prc.append(
-    #     {
-    #         'k': k,
-    #         # % of discrimination cases
-    #         'ST': round(k_res_abs[-1]['ST'] / n_pro * 100, sigfig),
-    #         'CSTwo': round(k_res_abs[-1]['CSTwo'] / n_pro * 100, sigfig),
-    #         'CSTwi': round(k_res_abs[-1]['CSTwi'] / n_pro * 100, sigfig),
-    #         'CF': round(k_res_abs[-1]['CF'] / n_pro * 100, sigfig),
-    #         # % of discrimination cases that are statistically significant
-    #         'ST_sig': round(k_res_abs[-1]['ST_sig'] / n_pro * 100, sigfig),
-    #         'CSTwo_sig': round(k_res_abs[-1]['CSTwo_sig'] / n_pro * 100, sigfig),
-    #         'CSTwi_sig': round(k_res_abs[-1]['CSTwi_sig'] / n_pro * 100, sigfig),
-    #         'CF_sig': round(k_res_abs[-1]['CF_sig'] / n_pro * 100, sigfig)
-    #     }
-    # )
     del st_td, cst_wo_td, cst_wi_td, cf
 print('===== DONE =====')
-
-# df_k_res_abs = pd.DataFrame(k_res_abs)
-# del k_res_abs
-# df_k_res_prc = pd.DataFrame(k_res_prc)
-# del k_res_prc
-#
-# print(df_k_res_abs)
-# print(df_k_res_prc)
-#
-# df_k_res_abs.to_csv(resu_path + f'\\res_LawSchool_{do}_abs.csv', sep='|', index=False)
-# df_k_res_prc.to_csv(resu_path + f'\\res_LawSchool_{do}_prc.csv', sep='|', index=False)
-# del df_k_res_abs, df_k_res_prc
 
 print('###############################################################################################################')
 print('# Multiple discrimination: do(Gender:= Female) + do(Race:= White)')
