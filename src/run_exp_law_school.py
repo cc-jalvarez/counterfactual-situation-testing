@@ -64,12 +64,12 @@ n_pro = df[df['Gender'] == 'Female'].shape[0]
 k_res_abs = []
 k_res_prc = []
 
-# store results for multiple disc.: G for gender
-g_k_res = {}
+# # store results for multiple disc.: G for gender
+# g_k_res = {}
 
 for k in k_list:
     print(k)
-    g_k_res[k] = {}
+    # g_k_res[k] = {}
 
     # --- Situation Testing (ST)
     st = SituationTesting()
@@ -77,7 +77,7 @@ for k in k_list:
     st.run(target_att=feat_trgt, target_val=feat_trgt_vals, sensitive_att=feat_prot, sensitive_val=feat_prot_vals, k=k, alpha=alpha, tau=tau)
     st_td = st.get_test_discrimination()
     del st
-    g_k_res[k]['ST'] = st_td
+    # g_k_res[k]['ST'] = st_td
 
     # --- Counterfactual Situation Testing without centers (CST wo)
     cst_wo = SituationTesting()
@@ -85,7 +85,7 @@ for k in k_list:
     cst_wo.run(target_att=feat_trgt, target_val=feat_trgt_vals, sensitive_att=feat_prot, sensitive_val=feat_prot_vals, include_centers=False, k=k, alpha=alpha, tau=tau)
     cst_wo_td = cst_wo.get_test_discrimination()
     del cst_wo
-    g_k_res[k]['CSTwo'] = cst_wo_td
+    # g_k_res[k]['CSTwo'] = cst_wo_td
 
     # --- Counterfactual Situation Testing with centers (CST wi)
     cst_wi = SituationTesting()
@@ -95,8 +95,8 @@ for k in k_list:
     # Includes Counterfactual Fairness (CF)
     cf = cst_wi.res_counterfactual_unfairness
     del cst_wi
-    g_k_res[k]['CSTwi'] = cst_wi_td
-    g_k_res[k]['CF'] = cf
+    # g_k_res[k]['CSTwi'] = cst_wi_td
+    # g_k_res[k]['CF'] = cf
 
     # --- k's results: absolutes
     k_res_abs.append(
@@ -179,12 +179,12 @@ n_pro = df[df['Race'] == 'NonWhite'].shape[0]
 k_res_abs = []
 k_res_prc = []
 
-# store results for multiple disc.: R for race
-r_k_res = {}
+# # store results for multiple disc.: R for race
+# r_k_res = {}
 
 for k in k_list:
     print(k)
-    r_k_res[k] = {}
+    # r_k_res[k] = {}
 
     # --- Situation Testing (ST)
     st = SituationTesting()
@@ -192,7 +192,7 @@ for k in k_list:
     st.run(target_att=feat_trgt, target_val=feat_trgt_vals, sensitive_att=feat_prot, sensitive_val=feat_prot_vals, k=k, alpha=alpha, tau=tau)
     st_td = st.get_test_discrimination()
     del st
-    r_k_res[k]['ST'] = st_td
+    # r_k_res[k]['ST'] = st_td
 
     # --- Counterfactual Situation Testing without centers (CST wo)
     cst_wo = SituationTesting()
@@ -200,7 +200,7 @@ for k in k_list:
     cst_wo.run(target_att=feat_trgt, target_val=feat_trgt_vals, sensitive_att=feat_prot, sensitive_val=feat_prot_vals, include_centers=False, k=k, alpha=alpha, tau=tau)
     cst_wo_td = cst_wo.get_test_discrimination()
     del cst_wo
-    r_k_res[k]['CSTwo'] = cst_wo_td
+    # r_k_res[k]['CSTwo'] = cst_wo_td
 
     # --- Counterfactual Situation Testing with centers (CST wi)
     cst_wi = SituationTesting()
@@ -210,8 +210,8 @@ for k in k_list:
     # Includes Counterfactual Fairness (CF)
     cf = cst_wi.res_counterfactual_unfairness
     del cst_wi
-    r_k_res[k]['CSTwi'] = cst_wi_td
-    r_k_res[k]['CF'] = cf
+    # r_k_res[k]['CSTwi'] = cst_wi_td
+    # r_k_res[k]['CF'] = cf
 
     # --- k's results: absolutes
     k_res_abs.append(
@@ -268,132 +268,130 @@ df_k_res_abs.to_csv(resu_path + f'\\res_LawSchool_{do}_abs.csv', sep='|', index=
 df_k_res_prc.to_csv(resu_path + f'\\res_LawSchool_{do}_prc.csv', sep='|', index=False)
 del df_k_res_abs, df_k_res_prc
 
-print('###############################################################################################################')
-print('# Multiple discrimination: do(Gender:= Female) + do(Race:= White)')
-print('###############################################################################################################')
-
-# for the loop
-n_pro = org_df[(org_df['sex'] == 'Female') & (org_df['race_nonwhite'] == 'NonWhite')].shape[0]
-k_res_abs = []
-k_res_prc = []
-
-# TODO: adjust the one-sided CIs using the \alpha/m correction and update the StatEvi columns
-
-for k in k_list:
-    print(k)
-
-    # use g_k_res and r_k_res: these are nested dictionaries using k run and method
-    # --- ST
-    g_st = g_k_res[k]['ST']
-    r_st = r_k_res[k]['ST']
-    # --- CST wo
-    g_cstwo = g_k_res[k]['CSTwo']
-    r_cstwo = r_k_res[k]['CSTwo']
-    # --- CST wi
-    g_cstwi = g_k_res[k]['CSTwi']
-    r_cstwi = r_k_res[k]['CSTwi']
-    # --- CF
-    g_cf = g_k_res[k]['CF']
-    r_cf = r_k_res[k]['CF']
-
-    # create temporary DFs for avg. delta TODO could use them Num. (temp.shape[0])
-    temp_st = pd.merge(
-        g_st[g_st['DiscEvi'] == 'Yes'], r_st[r_st['DiscEvi'] == 'Yes'], how='inner', on='individual'
-    )
-    temp_cstwo = pd.merge(
-        g_cstwo[g_cstwo['DiscEvi'] == 'Yes'], r_cstwo[r_cstwo['DiscEvi'] == 'Yes'], how='inner', on='individual'
-    )
-    temp_cstwi = pd.merge(
-        g_cstwi[g_cstwi['DiscEvi'] == 'Yes'], r_cstwi[r_cstwi['DiscEvi'] == 'Yes'], how='inner', on='individual'
-    )
-    temp_st_sig = pd.merge(
-        g_st[(g_st['DiscEvi'] == 'Yes') & (g_st['StatEvi'] == 'Yes')], r_st[(r_st['DiscEvi'] == 'Yes') & (r_st['StatEvi'] == 'Yes')], how='inner', on='individual'
-    )
-    temp_cstwo_sig = pd.merge(
-        g_cstwo[(g_cstwo['DiscEvi'] == 'Yes') & (g_cstwo['StatEvi'] == 'Yes')], r_cstwo[(r_cstwo['DiscEvi'] == 'Yes') & (r_cstwo['StatEvi'] == 'Yes')], how='inner', on='individual'
-    )
-    temp_cstwi_sig = pd.merge(
-        g_cstwi[(g_cstwi['DiscEvi'] == 'Yes') & (g_cstwi['StatEvi'] == 'Yes')], r_cstwi[(r_cstwi['DiscEvi'] == 'Yes') & (r_cstwi['StatEvi'] == 'Yes')], how='inner', on='individual'
-    )
-    # --- k's results: absolutes
-    k_res_abs.append(
-        {
-            'k': k,
-            # Num. of discrimination cases
-            'ST': len(
-                set(g_st[g_st['DiscEvi'] == 'Yes']['individual'].to_list()) &
-                set(r_st[r_st['DiscEvi'] == 'Yes']['individual'].to_list())
-            ),
-            'CSTwo': len(
-                set(g_cstwo[g_cstwo['DiscEvi'] == 'Yes']['individual'].to_list()) &
-                set(r_cstwo[r_cstwo['DiscEvi'] == 'Yes']['individual'].to_list())
-            ),
-            'CSTwi': len(
-                set(g_cstwi[g_cstwi['DiscEvi'] == 'Yes']['individual'].to_list()) &
-                set(r_cstwi[r_cstwi['DiscEvi'] == 'Yes']['individual'].to_list())
-            ),
-            'CF': sum((g_k_res[k]['CF'] == 1.0) & (r_k_res[k]['CF'] == 1.0)),
-            # Num. of discrimination cases that are statistically significant
-            'ST_sig': len(
-                set(g_st[(g_st['DiscEvi'] == 'Yes') & (g_st['StatEvi'] == 'Yes')]['individual'].to_list()) &
-                set(r_st[(r_st['DiscEvi'] == 'Yes') & (r_st['StatEvi'] == 'Yes')]['individual'].to_list())
-            ),
-            'CSTwo_sig': len(
-                set(g_cstwo[(g_cstwo['DiscEvi'] == 'Yes') & (g_cstwo['StatEvi'] == 'Yes')]['individual'].to_list()) &
-                set(r_cstwo[(r_cstwo['DiscEvi'] == 'Yes') & (r_cstwo['StatEvi'] == 'Yes')]['individual'].to_list())
-            ),
-            'CSTwi_sig': len(
-                set(g_cstwi[(g_cstwi['DiscEvi'] == 'Yes') & (g_cstwi['StatEvi'] == 'Yes')]['individual'].to_list()) &
-                set(r_cstwi[(r_cstwi['DiscEvi'] == 'Yes') & (r_cstwi['StatEvi'] == 'Yes')]['individual'].to_list())
-            ),
-            'CF_sig': len(
-                set(g_cstwi[g_cstwi['individual'].isin(g_cf[g_cf == 1].index.to_list()) &
-                            (g_cstwi['StatEvi'] == 'Yes')]['individual'].to_list())
-                &
-                set(r_cstwi[r_cstwi['individual'].isin(r_cf[r_cf == 1].index.to_list()) &
-                            (r_cstwi['StatEvi'] == 'Yes')]['individual'].to_list())
-            ),
-            # Avg. delta (all)
-            'ST_delta': ((temp_st['delta_p_x'] + temp_st['delta_p_y']) / 2).mean(),
-            'CSTwo_delta': ((temp_cstwo['delta_p_x'] + temp_cstwo['delta_p_y']) / 2).mean(),
-            'CSTwi_delta': ((temp_cstwi['delta_p_x'] + temp_cstwi['delta_p_y']) / 2).mean(),
-            # Avg. delta (significant)
-            'ST_delta_sig': ((temp_st_sig['delta_p_x'] + temp_st_sig['delta_p_y']) / 2).mean(),
-            'CSTwo_delta_sig': ((temp_cstwo_sig['delta_p_x'] + temp_cstwo_sig['delta_p_y']) / 2).mean(),
-            'CSTwi_delta_sig': ((temp_cstwi_sig['delta_p_x'] + temp_cstwi_sig['delta_p_y']) / 2).mean(),
-        }
-    )
-    # --- k's results: percentages
-    k_res_prc.append(
-        {
-            'k': k,
-            # % of discrimination cases
-            'ST': round(k_res_abs[-1]['ST'] / n_pro * 100, sigfig),
-            'CSTwo': round(k_res_abs[-1]['CSTwo'] / n_pro * 100, sigfig),
-            'CSTwi': round(k_res_abs[-1]['CSTwi'] / n_pro * 100, sigfig),
-            'CF': round(k_res_abs[-1]['CF'] / n_pro * 100, sigfig),
-            # % of discrimination cases that are statistically significant
-            'ST_sig': round(k_res_abs[-1]['ST_sig'] / n_pro * 100, sigfig),
-            'CSTwo_sig': round(k_res_abs[-1]['CSTwo_sig'] / n_pro * 100, sigfig),
-            'CSTwi_sig': round(k_res_abs[-1]['CSTwi_sig'] / n_pro * 100, sigfig),
-            'CF_sig': round(k_res_abs[-1]['CF_sig'] / n_pro * 100, sigfig)
-        }
-    )
-    del temp_st, temp_st_sig, temp_cstwo, temp_cstwo_sig, temp_cstwi, temp_cstwi_sig
-del g_k_res, r_k_res
-print('===== DONE =====')
-
-df_k_res_abs = pd.DataFrame(k_res_abs)
-del k_res_abs
-df_k_res_prc = pd.DataFrame(k_res_prc)
-del k_res_prc
-
-print(df_k_res_abs)
-print(df_k_res_prc)
-
-df_k_res_abs.to_csv(resu_path + f'\\res_LawSchool_Multiple_abs.csv', sep='|', index=False)
-df_k_res_prc.to_csv(resu_path + f'\\res_LawSchool_Multiple_prc.csv', sep='|', index=False)
-del df_k_res_abs, df_k_res_prc
+# print('###############################################################################################################')
+# print('# Multiple discrimination: do(Gender:= Female) + do(Race:= White)')
+# print('###############################################################################################################')
+#
+# # for the loop
+# n_pro = org_df[(org_df['sex'] == 'Female') & (org_df['race_nonwhite'] == 'NonWhite')].shape[0]
+# k_res_abs = []
+# k_res_prc = []
+#
+# for k in k_list:
+#     print(k)
+#
+#     # use g_k_res and r_k_res: these are nested dictionaries using k run and method
+#     # --- ST
+#     g_st = g_k_res[k]['ST']
+#     r_st = r_k_res[k]['ST']
+#     # --- CST wo
+#     g_cstwo = g_k_res[k]['CSTwo']
+#     r_cstwo = r_k_res[k]['CSTwo']
+#     # --- CST wi
+#     g_cstwi = g_k_res[k]['CSTwi']
+#     r_cstwi = r_k_res[k]['CSTwi']
+#     # --- CF
+#     g_cf = g_k_res[k]['CF']
+#     r_cf = r_k_res[k]['CF']
+#
+#     # create temporary DFs for avg. delta
+#     temp_st = pd.merge(
+#         g_st[g_st['DiscEvi'] == 'Yes'], r_st[r_st['DiscEvi'] == 'Yes'], how='inner', on='individual'
+#     )
+#     temp_cstwo = pd.merge(
+#         g_cstwo[g_cstwo['DiscEvi'] == 'Yes'], r_cstwo[r_cstwo['DiscEvi'] == 'Yes'], how='inner', on='individual'
+#     )
+#     temp_cstwi = pd.merge(
+#         g_cstwi[g_cstwi['DiscEvi'] == 'Yes'], r_cstwi[r_cstwi['DiscEvi'] == 'Yes'], how='inner', on='individual'
+#     )
+#     temp_st_sig = pd.merge(
+#         g_st[(g_st['DiscEvi'] == 'Yes') & (g_st['StatEvi'] == 'Yes')], r_st[(r_st['DiscEvi'] == 'Yes') & (r_st['StatEvi'] == 'Yes')], how='inner', on='individual'
+#     )
+#     temp_cstwo_sig = pd.merge(
+#         g_cstwo[(g_cstwo['DiscEvi'] == 'Yes') & (g_cstwo['StatEvi'] == 'Yes')], r_cstwo[(r_cstwo['DiscEvi'] == 'Yes') & (r_cstwo['StatEvi'] == 'Yes')], how='inner', on='individual'
+#     )
+#     temp_cstwi_sig = pd.merge(
+#         g_cstwi[(g_cstwi['DiscEvi'] == 'Yes') & (g_cstwi['StatEvi'] == 'Yes')], r_cstwi[(r_cstwi['DiscEvi'] == 'Yes') & (r_cstwi['StatEvi'] == 'Yes')], how='inner', on='individual'
+#     )
+#     # --- k's results: absolutes
+#     k_res_abs.append(
+#         {
+#             'k': k,
+#             # Num. of discrimination cases
+#             'ST': len(
+#                 set(g_st[g_st['DiscEvi'] == 'Yes']['individual'].to_list()) &
+#                 set(r_st[r_st['DiscEvi'] == 'Yes']['individual'].to_list())
+#             ),
+#             'CSTwo': len(
+#                 set(g_cstwo[g_cstwo['DiscEvi'] == 'Yes']['individual'].to_list()) &
+#                 set(r_cstwo[r_cstwo['DiscEvi'] == 'Yes']['individual'].to_list())
+#             ),
+#             'CSTwi': len(
+#                 set(g_cstwi[g_cstwi['DiscEvi'] == 'Yes']['individual'].to_list()) &
+#                 set(r_cstwi[r_cstwi['DiscEvi'] == 'Yes']['individual'].to_list())
+#             ),
+#             'CF': sum((g_k_res[k]['CF'] == 1.0) & (r_k_res[k]['CF'] == 1.0)),
+#             # Num. of discrimination cases that are statistically significant
+#             'ST_sig': len(
+#                 set(g_st[(g_st['DiscEvi'] == 'Yes') & (g_st['StatEvi'] == 'Yes')]['individual'].to_list()) &
+#                 set(r_st[(r_st['DiscEvi'] == 'Yes') & (r_st['StatEvi'] == 'Yes')]['individual'].to_list())
+#             ),
+#             'CSTwo_sig': len(
+#                 set(g_cstwo[(g_cstwo['DiscEvi'] == 'Yes') & (g_cstwo['StatEvi'] == 'Yes')]['individual'].to_list()) &
+#                 set(r_cstwo[(r_cstwo['DiscEvi'] == 'Yes') & (r_cstwo['StatEvi'] == 'Yes')]['individual'].to_list())
+#             ),
+#             'CSTwi_sig': len(
+#                 set(g_cstwi[(g_cstwi['DiscEvi'] == 'Yes') & (g_cstwi['StatEvi'] == 'Yes')]['individual'].to_list()) &
+#                 set(r_cstwi[(r_cstwi['DiscEvi'] == 'Yes') & (r_cstwi['StatEvi'] == 'Yes')]['individual'].to_list())
+#             ),
+#             'CF_sig': len(
+#                 set(g_cstwi[g_cstwi['individual'].isin(g_cf[g_cf == 1].index.to_list()) &
+#                             (g_cstwi['StatEvi'] == 'Yes')]['individual'].to_list())
+#                 &
+#                 set(r_cstwi[r_cstwi['individual'].isin(r_cf[r_cf == 1].index.to_list()) &
+#                             (r_cstwi['StatEvi'] == 'Yes')]['individual'].to_list())
+#             ),
+#             # Avg. delta (all)
+#             'ST_delta': ((temp_st['delta_p_x'] + temp_st['delta_p_y']) / 2).mean(),
+#             'CSTwo_delta': ((temp_cstwo['delta_p_x'] + temp_cstwo['delta_p_y']) / 2).mean(),
+#             'CSTwi_delta': ((temp_cstwi['delta_p_x'] + temp_cstwi['delta_p_y']) / 2).mean(),
+#             # Avg. delta (significant)
+#             'ST_delta_sig': ((temp_st_sig['delta_p_x'] + temp_st_sig['delta_p_y']) / 2).mean(),
+#             'CSTwo_delta_sig': ((temp_cstwo_sig['delta_p_x'] + temp_cstwo_sig['delta_p_y']) / 2).mean(),
+#             'CSTwi_delta_sig': ((temp_cstwi_sig['delta_p_x'] + temp_cstwi_sig['delta_p_y']) / 2).mean(),
+#         }
+#     )
+#     # --- k's results: percentages
+#     k_res_prc.append(
+#         {
+#             'k': k,
+#             # % of discrimination cases
+#             'ST': round(k_res_abs[-1]['ST'] / n_pro * 100, sigfig),
+#             'CSTwo': round(k_res_abs[-1]['CSTwo'] / n_pro * 100, sigfig),
+#             'CSTwi': round(k_res_abs[-1]['CSTwi'] / n_pro * 100, sigfig),
+#             'CF': round(k_res_abs[-1]['CF'] / n_pro * 100, sigfig),
+#             # % of discrimination cases that are statistically significant
+#             'ST_sig': round(k_res_abs[-1]['ST_sig'] / n_pro * 100, sigfig),
+#             'CSTwo_sig': round(k_res_abs[-1]['CSTwo_sig'] / n_pro * 100, sigfig),
+#             'CSTwi_sig': round(k_res_abs[-1]['CSTwi_sig'] / n_pro * 100, sigfig),
+#             'CF_sig': round(k_res_abs[-1]['CF_sig'] / n_pro * 100, sigfig)
+#         }
+#     )
+#     del temp_st, temp_st_sig, temp_cstwo, temp_cstwo_sig, temp_cstwi, temp_cstwi_sig
+# del g_k_res, r_k_res
+# print('===== DONE =====')
+#
+# df_k_res_abs = pd.DataFrame(k_res_abs)
+# del k_res_abs
+# df_k_res_prc = pd.DataFrame(k_res_prc)
+# del k_res_prc
+#
+# print(df_k_res_abs)
+# print(df_k_res_prc)
+#
+# df_k_res_abs.to_csv(resu_path + f'\\res_LawSchool_Multiple_abs.csv', sep='|', index=False)
+# df_k_res_prc.to_csv(resu_path + f'\\res_LawSchool_Multiple_prc.csv', sep='|', index=False)
+# del df_k_res_abs, df_k_res_prc
 
 print('###############################################################################################################')
 print('# Intersectional discrimination: do(Gender:= Female) & do(Race:= White)')
