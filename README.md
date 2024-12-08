@@ -1,8 +1,6 @@
 # Counterfactual Situation Testing
 
-This, as in the *master* branch, is the ongoing repository for the counterfactual situation testing framework. 
-
-See *eeamo2023* branch for the code of ACM EAAMO 2023 paper, [Counterfactual Situation Testing: Uncovering Discrimination under Fairness given the Difference](https://dl.acm.org/doi/10.1145/3617694.3623222).
+The *master* branch is the ongoing repository for the counterfactual situation testing framework. See the *eeamo2023* branch for the code of the ACM EAAMO 2023 paper, [Counterfactual Situation Testing: Uncovering Discrimination under Fairness given the Difference](https://dl.acm.org/doi/10.1145/3617694.3623222).
 
 All datasets are contained within the data/ folder. The scripts get_data_< > prepare each dataset for the counterfactual situation testing pipeline. The rest of the scripts are within the src/ folder. 
 
