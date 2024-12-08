@@ -235,7 +235,6 @@ class SituationTesting:
         d_alpha_2 = z_score_2 * math.sqrt((p1 * (1 - p1) / k1) + (p2 * (1 - p2) / k2))
         ci_2 = [round(delta_p - d_alpha_2, sigfig), round(delta_p + d_alpha_2, sigfig)]
 
-        # TODO: check with Salvatore before implementing
         # if (p1 - p2) >= 0:
         #     diff = round(max(0, p1 - p2 - d_alpha), sigfig)
         # else:
