@@ -3,13 +3,12 @@ import pandas as pd
 import numpy as np
 from sklearn.linear_model import LinearRegression
 
-# This script get the structural counterfactuals (CF) for the loan application data
 # set working directory
 wrk_dir = os.path.dirname(os.getcwd())
 # set data path
-data_path = wrk_dir + '\\' + 'data' + '\\'
+data_path = wrk_dir + os.sep + 'data' + os.sep
 # Loan Application v2 (factual) data
-org_df = pd.read_csv(data_path + '\\' + 'LoanApplication_v2.csv', sep='|', )
+org_df = pd.read_csv(data_path + os.sep + 'LoanApplication_v2.csv', sep='|', )
 
 # define the list of features
 feat_trgt = ['LoanApproval']
@@ -68,7 +67,7 @@ cf_df = cf_df[feat_trgt + feat_rlvt + feat_prot]
 print(cf_df.head(5))
 
 # store counterfactual data in data/counterfactuals
-cf_df.to_csv(data_path + '\\counterfactuals\\' + 'cf_LoanApplication_v2.csv', sep='|', index=False)
+cf_df.to_csv(data_path + os.sep + 'counterfactuals' + os.sep + 'cf_LoanApplication_v2.csv', sep='|', index=False)
 
 #
 # EOF

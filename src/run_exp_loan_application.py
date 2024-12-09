@@ -10,8 +10,8 @@ data_path = os.path.abspath(os.path.join(wd, 'data'))
 resu_path = os.path.abspath(os.path.join(wd, 'results'))
 
 # load data
-df = pd.read_csv(data_path + '\\LoanApplication_v2.csv', sep='|')
-cf_df = pd.read_csv(data_path + '\\counterfactuals\\cf_LoanApplication_v2.csv', sep='|')
+df = pd.read_csv(data_path + os.sep + 'LoanApplication_v2.csv', sep='|')
+cf_df = pd.read_csv(data_path + os.sep + 'counterfactuals' + os.sep + 'cf_LoanApplication_v2.csv', sep='|')
 
 # target feature
 feat_trgt = 'LoanApproval'
@@ -39,7 +39,6 @@ test_cfdf = cf_df.copy()
 n_pro = df[df[feat_prot] == 1].shape[0]
 k_res_abs = []
 k_res_prc = []
-# k_analysis = []
 sigfig = 2
 
 # k-neighbors: for run experiments
@@ -123,11 +122,11 @@ df_k_res_prc = pd.DataFrame(k_res_prc)
 del k_res_prc
 
 if negative_disc:
-    df_k_res_abs.to_csv(resu_path + '\\res_LoanApplication.csv', sep='|', index=False)
-    df_k_res_prc.to_csv(resu_path + '\\res_LoanApplication.csv', sep='|', index=False, mode='a')
+    df_k_res_abs.to_csv(resu_path + os.sep + 'res_LoanApplication.csv', sep='|', index=False)
+    df_k_res_prc.to_csv(resu_path + os.sep + 'res_LoanApplication.csv', sep='|', index=False, mode='a')
 else:
-    df_k_res_abs.to_csv(resu_path + '\\res_LoanApplication_positive.csv', sep='|', index=False)
-    df_k_res_prc.to_csv(resu_path + '\\res_LoanApplication_positive.csv', sep='|', index=False, mode='a')
+    df_k_res_abs.to_csv(resu_path + os.sep + 'res_LoanApplication_positive.csv', sep='|', index=False)
+    df_k_res_prc.to_csv(resu_path + os.sep + 'res_LoanApplication_positive.csv', sep='|', index=False, mode='a')
 
 #
 # EOF

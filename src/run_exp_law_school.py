@@ -10,7 +10,7 @@ data_path = os.path.abspath(os.path.join(wd, 'data'))
 resu_path = os.path.abspath(os.path.join(wd, 'results'))
 
 # load and modify factual data
-org_df = pd.read_csv(data_path + '\\clean_LawSchool.csv', sep='|').reset_index(drop=True)
+org_df = pd.read_csv(data_path + os.sep + 'clean_LawSchool.csv', sep='|').reset_index(drop=True)
 # we focus on sex and race_nonwhite
 df = org_df[['sex', 'race_nonwhite', 'LSAT', 'UGPA']].copy()
 df.rename(columns={'sex': 'Gender', 'race_nonwhite': 'Race'}, inplace=True)
@@ -44,7 +44,7 @@ print('#########################################################################
 
 # load and modify counterfactual data
 do = 'Male'
-org_cf_df = pd.read_csv(data_path + '\\counterfactuals\\' + f'cf_LawSchool_lev3_do{do}.csv', sep='|').reset_index(drop=True)
+org_cf_df = pd.read_csv(data_path + os.sep + 'counterfactuals' + os.sep + f'cf_LawSchool_lev3_do{do}.csv', sep='|').reset_index(drop=True)
 cf_df = org_cf_df[['Sex', 'Race', 'scf_LSAT', 'scf_UGPA']].copy()
 cf_df = cf_df.rename(columns={'Sex': 'Gender', 'scf_LSAT': 'LSAT', 'scf_UGPA': 'UGPA'})
 
@@ -139,8 +139,8 @@ del k_res_abs
 df_k_res_prc = pd.DataFrame(k_res_prc)
 del k_res_prc
 
-df_k_res_abs.to_csv(resu_path + f'\\res_LawSchool_{do}_abs.csv', sep='|', index=False)
-df_k_res_prc.to_csv(resu_path + f'\\res_LawSchool_{do}_prc.csv', sep='|', index=False)
+df_k_res_abs.to_csv(resu_path + os.sep + f'res_LawSchool_{do}_abs.csv', sep='|', index=False)
+df_k_res_prc.to_csv(resu_path + os.sep + f'res_LawSchool_{do}_prc.csv', sep='|', index=False)
 del df_k_res_abs, df_k_res_prc
 
 print('###############################################################################################################')
@@ -149,7 +149,7 @@ print('#########################################################################
 
 # load and modify counterfactual data
 do = 'White'
-org_cf_df = pd.read_csv(data_path + '\\counterfactuals\\' + f'cf_LawSchool_lev3_do{do}.csv', sep='|').reset_index(drop=True)
+org_cf_df = pd.read_csv(data_path + os.sep + 'counterfactuals' + os.sep + f'cf_LawSchool_lev3_do{do}.csv', sep='|').reset_index(drop=True)
 cf_df = org_cf_df[['Sex', 'Race', 'scf_LSAT', 'scf_UGPA']].copy()
 cf_df = cf_df.rename(columns={'Sex': 'Gender', 'scf_LSAT': 'LSAT', 'scf_UGPA': 'UGPA'})
 
@@ -244,8 +244,8 @@ del k_res_abs
 df_k_res_prc = pd.DataFrame(k_res_prc)
 del k_res_prc
 
-df_k_res_abs.to_csv(resu_path + f'\\res_LawSchool_{do}_abs.csv', sep='|', index=False)
-df_k_res_prc.to_csv(resu_path + f'\\res_LawSchool_{do}_prc.csv', sep='|', index=False)
+df_k_res_abs.to_csv(resu_path + os.sep + f'res_LawSchool_{do}_abs.csv', sep='|', index=False)
+df_k_res_prc.to_csv(resu_path + os.sep + f'res_LawSchool_{do}_prc.csv', sep='|', index=False)
 del df_k_res_abs, df_k_res_prc
 
 print('###############################################################################################################')
@@ -254,7 +254,7 @@ print('#########################################################################
 
 # load and modify counterfactual data
 do = 'MaleWhite'
-org_cf_df = pd.read_csv(data_path + '\\counterfactuals\\' + f'cf_LawSchool_lev3_do{do}.csv', sep='|').reset_index(drop=True)
+org_cf_df = pd.read_csv(data_path + os.sep + 'counterfactuals' + os.sep + f'cf_LawSchool_lev3_do{do}.csv', sep='|').reset_index(drop=True)
 cf_df = org_cf_df[['GenderRace', 'scf_LSAT', 'scf_UGPA']].copy()
 cf_df = cf_df.rename(columns={'scf_LSAT': 'LSAT', 'scf_UGPA': 'UGPA'})
 
@@ -352,8 +352,8 @@ del k_res_abs
 df_k_res_prc = pd.DataFrame(k_res_prc)
 del k_res_prc
 
-df_k_res_abs.to_csv(resu_path + f'\\res_LawSchool_{do}_abs.csv', sep='|', index=False)
-df_k_res_prc.to_csv(resu_path + f'\\res_LawSchool_{do}_prc.csv', sep='|', index=False)
+df_k_res_abs.to_csv(resu_path + os.sep + f'res_LawSchool_{do}_abs.csv', sep='|', index=False)
+df_k_res_prc.to_csv(resu_path + os.sep + f'res_LawSchool_{do}_prc.csv', sep='|', index=False)
 del df_k_res_abs, df_k_res_prc
 
 #

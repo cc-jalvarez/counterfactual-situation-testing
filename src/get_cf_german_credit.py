@@ -6,9 +6,9 @@ from sklearn.linear_model import LinearRegression
 # set working directory
 wrk_dir = os.path.dirname(os.getcwd())
 # set data path
-data_path = wrk_dir + '\\' + 'data' + '\\'
+data_path = wrk_dir + os.sep + 'data' + os.sep
 # Loan Application v2 (factual) data
-org_df = pd.read_csv(data_path + '\\' + 'clean_GermanCreditData.csv', sep='|', )
+org_df = pd.read_csv(data_path + os.sep + 'clean_GermanCreditData.csv', sep='|', )
 
 print(org_df.head())
 
