@@ -17,19 +17,6 @@ An earlier version of this work appeared, [*Counterfactual Situation Testing: Un
 If you make use of this code, the CST algorithm, or the generated synthetic data in your work, please cite the following paper:
 
 <pre><code>
-@inproceedings{DBLP:conf/eaamo/RuggieriA23,
-  author       = {Jos{\'{e}} M. {\'{A}}lvarez and
-                  Salvatore Ruggieri},
-  title        = {Counterfactual Situation Testing: Uncovering Discrimination under
-                  Fairness given the Difference},
-  booktitle    = {{EAAMO}},
-  pages        = {2:1--2:11},
-  publisher    = {{ACM}},
-  year         = {2023}
-}
-</code></pre>
-
-<pre><code>
 @article{DBLP:journals/corr/abs-2502-01267,
   author       = {Jos{\'{e}} M. {\'{A}}lvarez and
                   Salvatore Ruggieri},
