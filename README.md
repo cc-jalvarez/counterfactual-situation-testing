@@ -15,13 +15,14 @@ An earlier version of this work, [*Counterfactual Situation Testing: Uncovering 
 If you make use of this code, the CST algorithm, or the generated synthetic data in your work, please cite the following paper:
 
 <pre><code>
-@article{DBLP:journals/corr/abs-2502-01267,
-  author       = {Jos{\'{e}} M. {\'{A}}lvarez and
+@article{DBLP:journals/jair/AlvarezR25,
+  author       = {Jose M. Alvarez and
                   Salvatore Ruggieri},
   title        = {Counterfactual Situation Testing: From Single to Multidimensional
                   Discrimination},
-  journal      = {CoRR},
-  volume       = {abs/2502.01267},
+  journal      = {J. Artif. Intell. Res.},
+  volume       = {82},
+  pages        = {2279--2323},
   year         = {2025}
 }
 </code></pre>
