@@ -16,7 +16,7 @@ If you make use of this code, the CST algorithm, or the generated synthetic data
 
 <pre><code>
 @article{DBLP:journals/jair/AlvarezR25,
-  author       = {Jose M. Alvarez and
+  author       = {Jos{\'{e}} M. {\'{A}}lvarez and
                   Salvatore Ruggieri},
   title        = {Counterfactual Situation Testing: From Single to Multidimensional
                   Discrimination},
